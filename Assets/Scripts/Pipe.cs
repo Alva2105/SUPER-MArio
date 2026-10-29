@@ -12,14 +12,31 @@ public class Pipe : MonoBehaviour
     {
         if (connection != null && other.CompareTag("Player"))
         {
-            if (Input.GetKey(enterKeyCode)) {
+            if (!entering && (Input.GetKey(enterKeyCode) || Input.GetKey(AlternateKey()))) {
                 StartCoroutine(Enter(other.transform));
             }
         }
     }
 
+    private bool entering;
+
+    // arrow keys work too
+    private KeyCode AlternateKey()
+    {
+        switch (enterKeyCode)
+        {
+            case KeyCode.S: return KeyCode.DownArrow;
+            case KeyCode.D: return KeyCode.RightArrow;
+            case KeyCode.A: return KeyCode.LeftArrow;
+            case KeyCode.W: return KeyCode.UpArrow;
+            default: return enterKeyCode;
+        }
+    }
+
     private IEnumerator Enter(Transform player)
     {
+        entering = true;
+
         player.GetComponent<PlayerMovement>().enabled = false;
         AudioManager.Play("pipe");
 
@@ -34,7 +51,7 @@ public class Pipe : MonoBehaviour
         if (exitDirection != Vector3.zero)
         {
             player.position = connection.position - exitDirection;
-            sideSrolling.SetUnderground(connection.position.y < sideSrolling.undergroundThreshold);
+            sideSrolling.OnPlayerTeleported(player.position);
             AudioManager.Play("pipe");
             yield return Move(player, connection.position + exitDirection, Vector3.one);
         }
@@ -42,10 +59,11 @@ public class Pipe : MonoBehaviour
         {
             player.position = connection.position;
             player.localScale = Vector3.one;
-            sideSrolling.SetUnderground(connection.position.y < sideSrolling.undergroundThreshold);
+            sideSrolling.OnPlayerTeleported(player.position);
         }
 
         player.GetComponent<PlayerMovement>().enabled = true;
+        entering = false;
     }
 
     private IEnumerator Move(Transform player, Vector3 endPosition, Vector3 endScale)

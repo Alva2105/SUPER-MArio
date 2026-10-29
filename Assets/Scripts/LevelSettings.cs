@@ -19,7 +19,40 @@ public class LevelSettings : MonoBehaviour
     public float cameraMaxX = 1000f;
     public bool followVertical = false;
 
+    [System.Serializable]
+    public class CameraZone
+    {
+        public string name;
+        public float minX;
+        public float maxX;
+        public float minY = -10f;
+        public float maxY = 30f;
+        public float cameraY = 6.5f;
+        public Color background = Color.black;
+        public string music;
+
+        public bool Contains(Vector2 point)
+        {
+            return point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY;
+        }
+    }
+
+    // separate areas of the level, each one with its own camera limits
+    public CameraZone[] zones = new CameraZone[0];
+
     public static LevelSettings Current { get; private set; }
+
+    public CameraZone FindZone(Vector2 point)
+    {
+        foreach (CameraZone zone in zones)
+        {
+            if (zone.Contains(point)) {
+                return zone;
+            }
+        }
+
+        return null;
+    }
 
     private void Awake()
     {

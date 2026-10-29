@@ -16,6 +16,10 @@ public class SideScrolling : MonoBehaviour
     public float lookAhead = 1.5f;
 
     private float velocityX;
+    private LevelSettings.CameraZone zone;
+
+    private bool hasZones => LevelSettings.Current != null && LevelSettings.Current.zones.Length > 0;
+    private float halfWidth => camera.orthographicSize * camera.aspect;
 
     private void Awake()
     {
@@ -36,6 +40,9 @@ public class SideScrolling : MonoBehaviour
         {
             minX = transform.position.x;
         }
+
+        UpdateZone(false);
+        Snap(player.position.x);
     }
 
     private void LateUpdate()
@@ -44,15 +51,65 @@ public class SideScrolling : MonoBehaviour
             return;
         }
 
+        UpdateZone(true);
+
         // track the player moving to the right, never scroll back
-        float halfWidth = camera.orthographicSize * camera.aspect;
         float target = Mathf.Max(transform.position.x, player.position.x + lookAhead);
-        target = Mathf.Clamp(target, minX + halfWidth, Mathf.Max(minX + halfWidth, maxX - halfWidth));
+        target = ClampX(target);
 
         Vector3 cameraPosition = transform.position;
         cameraPosition.x = Mathf.SmoothDamp(cameraPosition.x, target, ref velocityX, smoothTime);
         cameraPosition.x = Mathf.Max(cameraPosition.x, transform.position.x);
         transform.position = cameraPosition;
+    }
+
+    private float ClampX(float x)
+    {
+        return Mathf.Clamp(x, minX + halfWidth, Mathf.Max(minX + halfWidth, maxX - halfWidth));
+    }
+
+    // switches the camera limits, background and music when the player changes area
+    private void UpdateZone(bool playMusic)
+    {
+        if (!hasZones) return;
+
+        LevelSettings.CameraZone next = LevelSettings.Current.FindZone(player.position);
+
+        if (next == null || next == zone) return;
+
+        zone = next;
+        minX = zone.minX;
+        maxX = zone.maxX;
+        camera.backgroundColor = zone.background;
+
+        Vector3 cameraPosition = transform.position;
+        cameraPosition.y = zone.cameraY;
+        transform.position = cameraPosition;
+        Snap(player.position.x);
+
+        if (playMusic && !string.IsNullOrEmpty(zone.music)) {
+            AudioManager.PlayMusic(zone.music);
+        }
+    }
+
+    // called by pipes after moving the player to another place
+    public void OnPlayerTeleported(Vector3 destination)
+    {
+        if (hasZones)
+        {
+            zone = null;
+            Vector3 position = player.position;
+            player.position = destination;
+            UpdateZone(true);
+            player.position = position;
+        }
+        else
+        {
+            Vector3 position = player.position;
+            player.position = destination;
+            SetUnderground(destination.y < undergroundThreshold);
+            player.position = position;
+        }
     }
 
     public void SetUnderground(bool underground)
@@ -64,7 +121,6 @@ public class SideScrolling : MonoBehaviour
         // jump straight to the player when changing area
         if (player != null)
         {
-            float halfWidth = camera.orthographicSize * camera.aspect;
             cameraPosition.x = Mathf.Max(player.position.x, minX + halfWidth);
             velocityX = 0f;
         }
@@ -83,8 +139,7 @@ public class SideScrolling : MonoBehaviour
     public void Snap(float x)
     {
         Vector3 cameraPosition = transform.position;
-        float halfWidth = camera.orthographicSize * camera.aspect;
-        cameraPosition.x = Mathf.Clamp(x, minX + halfWidth, Mathf.Max(minX + halfWidth, maxX - halfWidth));
+        cameraPosition.x = ClampX(x);
         transform.position = cameraPosition;
         velocityX = 0f;
     }

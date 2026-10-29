@@ -10,6 +10,7 @@ public static class LevelTools
 
     public static readonly string[] SceneOrder = {
         "1-1",
+        "1-2",
     };
 
     [MenuItem("Mario/Configurar nivel 1-1")]
@@ -30,6 +31,12 @@ public static class LevelTools
         settings.cameraMinX = bounds.min.x;
         settings.cameraMaxX = bounds.max.x;
 
+        // the flag of 1-1 leads to the underground level
+        FlagPole flag = Object.FindAnyObjectByType<FlagPole>();
+        flag.nextWorld = 1;
+        flag.nextStage = 2;
+        LevelBuilder.Record(flag);
+
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene);
         UpdateBuildSettings();
@@ -49,6 +56,14 @@ public static class LevelTools
         }
 
         return bounds;
+    }
+
+    [MenuItem("Mario/Generar todos los niveles")]
+    public static void BuildAllLevels()
+    {
+        SetupLevel11();
+        Level12.Build();
+        UpdateBuildSettings();
     }
 
     [MenuItem("Mario/Actualizar Build Settings")]

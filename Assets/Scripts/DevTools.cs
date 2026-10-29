@@ -77,23 +77,30 @@ public class DevTools : MonoBehaviour
         ScreenCapture.CaptureScreenshot(Path.Combine(shotFolder, $"{scene}_start.png"));
         yield return new WaitForSecondsRealtime(0.5f);
 
-        GameObject player = GameObject.FindWithTag("Player");
-        SideScrolling cam = Camera.main != null ? Camera.main.GetComponent<SideScrolling>() : null;
-
-        if (player != null && shotPositions != null)
+        if (shotPositions != null)
         {
+            // time stays frozen so the player can't fall into pits while capturing
+            Time.timeScale = 0f;
+
             foreach (float x in shotPositions)
             {
+                GameObject player = GameObject.FindWithTag("Player");
+                SideScrolling cam = Camera.main != null ? Camera.main.GetComponent<SideScrolling>() : null;
+
+                if (player == null) break;
+
                 Vector3 position = player.transform.position;
                 position.x = x;
                 player.transform.position = position;
                 player.GetComponent<Rigidbody2D>().position = position;
 
+                yield return null;
+
                 if (cam != null) {
                     cam.Snap(x);
                 }
 
-                yield return new WaitForSecondsRealtime(0.6f);
+                yield return new WaitForSecondsRealtime(0.4f);
                 ScreenCapture.CaptureScreenshot(Path.Combine(shotFolder, $"{scene}_x{x}.png"));
                 yield return new WaitForSecondsRealtime(0.3f);
             }

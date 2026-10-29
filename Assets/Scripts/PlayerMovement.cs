@@ -16,6 +16,9 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce => (2f * maxJumpHeight) / (maxJumpTime / 2f);
     public float gravity => (-2f * maxJumpHeight) / Mathf.Pow(maxJumpTime / 2f, 2f);
 
+    // set by moving platforms while mario stands on them
+    public Vector2 platformVelocity { get; set; }
+
     public bool grounded { get; private set; }
     public bool jumping { get; private set; }
     public bool running => Mathf.Abs(velocity.x) > 0.25f || Mathf.Abs(inputAxis) > 0.25f;
@@ -39,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDisable()
     {
+        platformVelocity = Vector2.zero;
         rigidbody.bodyType = RigidbodyType2D.Kinematic;
         collider.enabled = false;
         velocity = Vector2.zero;
@@ -62,7 +66,7 @@ public class PlayerMovement : MonoBehaviour
     {
         // move mario based on his velocity
         Vector2 position = rigidbody.position;
-        position += velocity * Time.fixedDeltaTime;
+        position += (velocity + platformVelocity) * Time.fixedDeltaTime;
 
         // clamp within the screen bounds
         Vector2 leftEdge = camera.ScreenToWorldPoint(Vector2.zero);

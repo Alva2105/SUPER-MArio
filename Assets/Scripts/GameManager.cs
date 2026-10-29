@@ -156,7 +156,18 @@ public class GameManager : MonoBehaviour
         this.stage = stage;
 
         Time.timeScale = 1f;
-        SceneManager.LoadScene($"{world}-{stage}");
+
+        string sceneName = $"{world}-{stage}";
+
+        if (!Application.CanStreamedLevelBeLoaded(sceneName))
+        {
+            Debug.LogWarning($"Level {sceneName} is not in the build, returning to 1-1");
+            this.world = 1;
+            this.stage = 1;
+            sceneName = "1-1";
+        }
+
+        SceneManager.LoadScene(sceneName);
     }
 
     public void NextLevel()
