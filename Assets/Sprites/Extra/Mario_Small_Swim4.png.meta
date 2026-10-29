@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 845855d2d11222c4596a7a365ebc1bee
+guid: b98736cdabda95f4b8dfd9dd48a17ec7
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 735252799788736916
-    second: Seabed_0
+      213: -9199336634847101024
+    second: Mario_Small_Swim4_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,12 +113,12 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Seabed_0
+      name: Mario_Small_Swim4_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 0
-        width: 16
+        width: 15
         height: 16
       alignment: 0
       pivot: {x: 0, y: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 491e48f9684243a00800000000000000
-      internalID: 735252799788736916
+      spriteID: 0af73be1214655080800000000000000
+      internalID: -9199336634847101024
       vertices: []
       indices: 
       edges: []

@@ -200,4 +200,4 @@ MonoBehaviour:
   thrustSpeed: 6
   thrustTime: 0.4
   minY: 2.5
-  maxY: 9.5
+  maxY: 10.5

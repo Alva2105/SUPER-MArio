@@ -34,8 +34,12 @@ public class FlagPole : MonoBehaviour
     private IEnumerator LevelCompleteSequence(Transform player)
     {
         player.GetComponent<PlayerMovement>().enabled = false;
+        Player mario = player.GetComponent<Player>();
+        mario.climbing = true;
 
         yield return MoveTo(player, poleBottom.position);
+
+        mario.climbing = false;
 
         AudioManager.Play("stageclear");
 

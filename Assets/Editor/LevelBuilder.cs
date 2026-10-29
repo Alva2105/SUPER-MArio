@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -21,6 +23,8 @@ public class LevelBuilder
     public string groundPrefab = "Ground";
     public string brickPrefab = "Brick";
     public Sprite groundSprite;
+    public string hardPrefab = "HardBlock";
+    public Sprite hardSprite;
     public Sprite coinSprite;
 
     public LevelBuilder(string sceneName)
@@ -253,6 +257,13 @@ public class LevelBuilder
 
         Transform body = go.transform.Find("Bottom");
         float height = top - 0.5f - (bottom - 0.5f);
+
+        if (height <= 0f)
+        {
+            body.gameObject.SetActive(false);
+            return go.GetComponent<Pipe>();
+        }
+
         body.localPosition = new Vector3(0f, -0.5f - height / 2f, 0f);
         Resize(body.gameObject, new Vector2(2f, height));
         Record(body);
@@ -274,11 +285,226 @@ public class LevelBuilder
     }
 
     // sideways pipe; the opening starts at the edge x and sits on the floor
-    public Pipe SidePipe(float edgeX, int floorTop)
+    public Pipe SidePipe(float edgeX, int floorTop, float tunnelHeight = -1f)
     {
         GameObject go = Place("PipeConnection", edgeX, floorTop + 1.5f, "Pipes");
+
+        // the vertical part going up can be shorter or removed
+        if (tunnelHeight >= 0f)
+        {
+            Transform tunnel = go.transform.Find("Tunnel");
+
+            if (tunnelHeight == 0f)
+            {
+                tunnel.gameObject.SetActive(false);
+            }
+            else
+            {
+                tunnel.localPosition = new Vector3(3f, 2f + tunnelHeight / 2f, 0f);
+                Resize(tunnel.gameObject, new Vector2(2f, tunnelHeight));
+                Record(tunnel);
+            }
+        }
+
         return go.GetComponent<Pipe>();
     }
+
+    // small sideways pipe made from a single sprite (used under water)
+    public Pipe SmallSidePipe(string sprite, int x, float y, Vector2 size)
+    {
+        GameObject root = Create("Side Pipe", x - 0.5f, y, "Pipes");
+        root.layer = LayerMask.NameToLayer("Ignore Raycast");
+        var trigger = root.AddComponent<BoxCollider2D>();
+        trigger.isTrigger = true;
+        trigger.size = new Vector2(0.5f, 0.75f);
+
+        GameObject body = SpriteObject(sprite, x, y, 4, "Pipes");
+        body.transform.SetParent(root.transform, true);
+        body.AddComponent<BoxCollider2D>().size = size;
+
+        Pipe pipe = root.AddComponent<Pipe>();
+        pipe.enterKeyCode = KeyCode.D;
+        pipe.enterDirection = Vector3.right;
+        return pipe;
+    }
+
+    public GameObject Piranha(int pipeX, int pipeTop, Sprite[] frames = null)
+    {
+        GameObject go = Enemy("PiranhaPlant", pipeX + 0.5f, pipeTop - 0.5f);
+
+        if (frames != null) {
+            Reskin(go, frames);
+        }
+
+        return go;
+    }
+
+    // swaps the sprites of an enemy, for example the blue ones of the underground
+    public static void Reskin(GameObject go, Sprite[] frames, Sprite special = null)
+    {
+        var renderer = go.GetComponent<SpriteRenderer>();
+        renderer.sprite = frames[0];
+        Record(renderer);
+
+        var animation = go.GetComponent<AnimatedSprite>();
+
+        if (animation != null)
+        {
+            animation.sprites = frames;
+            Record(animation);
+        }
+
+        if (special == null) return;
+
+        var goomba = go.GetComponent<Goomba>();
+        var koopa = go.GetComponent<Koopa>();
+
+        if (goomba != null) { goomba.flatSprite = special; Record(goomba); }
+        if (koopa != null) { koopa.shellSprite = special; Record(koopa); }
+    }
+
+    public class MapData
+    {
+        public readonly Dictionary<int, Pipe> pipes = new Dictionary<int, Pipe>();
+        public readonly List<Vector2> lifts = new List<Vector2>();
+        public float flagX = float.NaN;
+        public float castleX = float.NaN;
+        public int width;
+    }
+
+    // Reads a text map (see Assets/Editor/Levels/Maps), one character per tile
+    public MapData LoadMap(string file, int offsetX, bool pipes = true)
+    {
+        string[] lines = File.ReadAllLines($"Assets/Editor/Levels/Maps/{file}")
+            .Where(line => !line.StartsWith(";") && line.Length > 0)
+            .ToArray();
+
+        int height = lines.Length;
+        int width = lines.Max(line => line.Length);
+        var map = new MapData { width = width };
+
+        char At(int x, int y)
+        {
+            if (y < 0 || y >= height) return '.';
+            string line = lines[height - 1 - y];
+            return x >= 0 && x < line.Length ? line[x] : '.';
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (At(x, y) == 'F') map.flagX = x + offsetX;
+                if (At(x, y) == 'K') map.castleX = x + offsetX;
+            }
+        }
+
+        // solid blocks are merged into rectangles
+        var used = new bool[width, height];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                char c = At(x, y);
+
+                if (used[x, y] || (c != '#' && c != 'S' && c != 'H')) continue;
+
+                // the flag pole already has its own base block
+                if (c == 'H' && x + offsetX == map.flagX && y == 2) continue;
+
+                int x1 = x;
+                while (x1 + 1 < width && At(x1 + 1, y) == c && !used[x1 + 1, y]) x1++;
+
+                int y1 = y;
+                while (y1 + 1 < height && Enumerable.Range(x, x1 - x + 1).All(i => At(i, y1 + 1) == c && !used[i, y1 + 1])) y1++;
+
+                for (int i = x; i <= x1; i++) {
+                    for (int j = y; j <= y1; j++) used[i, j] = true;
+                }
+
+                if (c == '#') {
+                    Block(x + offsetX, y, x1 + offsetX, y1);
+                } else if (c == 'S') {
+                    HardBlock(x + offsetX, y, x1 + offsetX, y1);
+                } else {
+                    Solid("HardBlock", x + offsetX, y, x1 + offsetX, y1, "Hard");
+                }
+            }
+        }
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int wx = x + offsetX;
+
+                switch (At(x, y))
+                {
+                    case 'B': Brick(wx, y); break;
+                    case '?': Mystery(wx, y); break;
+                    case 'o': Coin(wx, y); break;
+                    case 'w': SpriteObject("Seaweed", wx, y, 1); break;
+
+                    case 'T':
+                        if (pipes) map.pipes[wx] = Pipe(wx, y);
+                        break;
+
+                    case 'L':
+                        // a lift starts on the first tile of each run and is 3 tiles wide
+                        if (At(x - 1, y) != 'L') map.lifts.Add(new Vector2(wx + 1.5f, y + 0.25f));
+                        break;
+                }
+            }
+        }
+
+        return map;
+    }
+
+    public GameObject HardBlock(int x0, int y0, int x1, int y1)
+    {
+        GameObject go = Solid(hardPrefab, x0, y0, x1, y1, "Hard");
+
+        if (hardSprite != null)
+        {
+            var renderer = go.GetComponent<SpriteRenderer>();
+            renderer.sprite = hardSprite;
+            Record(renderer);
+        }
+
+        return go;
+    }
+
+    // finds a brick or block placed by the map to change what it contains
+    public BlockHit BlockAt(int x, int y)
+    {
+        foreach (BlockHit block in Object.FindObjectsByType<BlockHit>(FindObjectsSortMode.None))
+        {
+            Vector3 p = block.transform.position;
+
+            if (Mathf.Approximately(p.x, x) && Mathf.Approximately(p.y, y)) {
+                return block;
+            }
+        }
+
+        return null;
+    }
+
+    public void SetItem(int x, int y, string item, int hits = 1)
+    {
+        BlockHit block = BlockAt(x, y);
+        block.item = LoadPrefab(item);
+        block.maxHits = hits;
+        Record(block);
+    }
+
+    // invisible wall that keeps mario inside an area
+    public void Wall(float x, float y0, float y1)
+    {
+        GameObject go = Create("Wall", x, (y0 + y1) / 2f, "Stage");
+        go.AddComponent<BoxCollider2D>().size = new Vector2(1f, y1 - y0);
+    }
+
 
     public GameObject Lift(float x, float y, float width, Vector2 direction, float distance, float speed, float offset, MovingPlatform.Mode mode)
     {

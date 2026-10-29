@@ -8,9 +8,13 @@ public class Pipe : MonoBehaviour
     public Vector3 enterDirection = Vector3.down;
     public Vector3 exitDirection = Vector3.zero;
 
+    [Header("Warp zone")]
+    public int warpWorld;
+    public int warpStage;
+
     private void OnTriggerStay2D(Collider2D other)
     {
-        if (connection != null && other.CompareTag("Player"))
+        if ((connection != null || warpWorld > 0) && other.CompareTag("Player"))
         {
             if (!entering && (Input.GetKey(enterKeyCode) || Input.GetKey(AlternateKey()))) {
                 StartCoroutine(Enter(other.transform));
@@ -45,6 +49,12 @@ public class Pipe : MonoBehaviour
 
         yield return Move(player, enteredPosition, enteredScale);
         yield return new WaitForSeconds(1f);
+
+        if (warpWorld > 0)
+        {
+            GameManager.Instance.LoadLevel(warpWorld, warpStage);
+            yield break;
+        }
 
         var sideSrolling = Camera.main.GetComponent<SideScrolling>();
 

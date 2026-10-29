@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 00b9b68b5ee9c994b8d57094e34b7ed6
+guid: 9fa6ee36411de0646a049650ba07f744
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8025992449720396209
-    second: Coral_0
+      213: -5803341328663406185
+    second: Piranha_Under2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Coral_0
+      name: Piranha_Under2_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 17
-        height: 16
+        width: 16
+        height: 24
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f46d278f362fd9090800000000000000
-      internalID: -8025992449720396209
+      spriteID: 7999caa1fc3667fa0800000000000000
+      internalID: -5803341328663406185
       vertices: []
       indices: 
       edges: []

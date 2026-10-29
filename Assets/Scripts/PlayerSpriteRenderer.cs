@@ -4,30 +4,39 @@ using UnityEngine;
 public class PlayerSpriteRenderer : MonoBehaviour
 {
     private PlayerMovement movement;
+    private Player player;
     public SpriteRenderer spriteRenderer { get; private set; }
     public Sprite idle;
     public Sprite jump;
     public Sprite slide;
     public AnimatedSprite run;
 
+    [Header("Swimming and flag pole")]
+    public Sprite[] swim;
+    public Sprite[] climb;
+    public float strokeFrameTime = 0.07f;
+
     private void Awake()
     {
         movement = GetComponentInParent<PlayerMovement>();
+        player = GetComponentInParent<Player>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void LateUpdate()
     {
-        // paddle while swimming, with the jump pose right after each stroke
-        if (movement.swimming && !movement.grounded)
+        // sliding down the flag pole
+        if (player.climbing && climb != null && climb.Length > 0)
         {
-            bool stroke = Time.time - movement.lastStroke < 0.3f;
-            run.enabled = !stroke;
+            run.enabled = false;
+            spriteRenderer.sprite = climb[Mathf.FloorToInt(Time.time * 8f) % climb.Length];
+            return;
+        }
 
-            if (stroke) {
-                spriteRenderer.sprite = jump;
-            }
-
+        if (movement.swimming && !movement.grounded && swim != null && swim.Length > 0)
+        {
+            run.enabled = false;
+            spriteRenderer.sprite = SwimFrame();
             return;
         }
 
@@ -40,6 +49,18 @@ public class PlayerSpriteRenderer : MonoBehaviour
         } else if (!movement.running) {
             spriteRenderer.sprite = idle;
         }
+    }
+
+    // each stroke plays the whole kick, then mario drifts with the first frames
+    private Sprite SwimFrame()
+    {
+        int frame = Mathf.FloorToInt((Time.time - movement.lastStroke) / strokeFrameTime);
+
+        if (frame < swim.Length) {
+            return swim[frame];
+        }
+
+        return swim[Mathf.FloorToInt(Time.time * 3f) % Mathf.Min(2, swim.Length)];
     }
 
     private void OnEnable()

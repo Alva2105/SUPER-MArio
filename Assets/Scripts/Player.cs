@@ -13,6 +13,7 @@ public class Player : MonoBehaviour
     public bool big => bigRenderer.enabled;
     public bool dead => deathAnimation.enabled;
     public bool starpower { get; private set; }
+    public bool climbing { get; set; }
 
     private void Awake()
     {
