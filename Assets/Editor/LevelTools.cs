@@ -12,6 +12,7 @@ public static class LevelTools
         "1-1",
         "1-2",
         "2-2",
+        "2-4",
         "GameOver",
     };
 
@@ -68,6 +69,12 @@ public static class LevelTools
         Level22.Build();
         GameOverScene.Build();
         UpdateBuildSettings();
+    }
+
+    public static void BuildCastleAndPlayer()
+    {
+        Level24.Build();
+        BuildWindows();
     }
 
     [MenuItem("Mario/Actualizar Build Settings")]
