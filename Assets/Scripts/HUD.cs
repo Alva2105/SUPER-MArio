@@ -3,19 +3,21 @@ using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
 {
-    private Text scoreText;
-    private Text coinsText;
-    private Text worldText;
-    private Text timeText;
-    private Text livesText;
+    public static readonly Color CoinColor = new Color(0.99f, 0.6f, 0.22f);
+
+    private PixelText scoreText;
+    private PixelText coinIcon;
+    private PixelText coinsText;
+    private PixelText worldText;
+    private PixelText timeText;
+    private PixelText livesText;
     private GameObject topBar;
     private GameObject introPanel;
-    private Text introText;
+    private PixelText introText;
     private GameObject pausePanel;
+    private bool timeVisible = true;
 
     public bool introVisible => introPanel.activeSelf;
-
-    public static Font DefaultFont => Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
     public static HUD Create(Transform parent)
     {
@@ -36,29 +38,30 @@ public class HUD : MonoBehaviour
 
     private void Awake()
     {
-        topBar = new GameObject("Top Bar", typeof(RectTransform));
-        topBar.transform.SetParent(transform, false);
-        Stretch(topBar.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -70f), Vector2.zero);
-
-        scoreText = CreateText(topBar.transform, 0.02f, 0.22f, TextAnchor.UpperLeft);
-        coinsText = CreateText(topBar.transform, 0.24f, 0.42f, TextAnchor.UpperCenter);
-        worldText = CreateText(topBar.transform, 0.44f, 0.62f, TextAnchor.UpperCenter);
-        timeText = CreateText(topBar.transform, 0.64f, 0.80f, TextAnchor.UpperCenter);
-        livesText = CreateText(topBar.transform, 0.82f, 0.98f, TextAnchor.UpperRight);
-
         introPanel = CreatePanel("Intro", Color.black);
-        introText = CreateText(introPanel.transform, 0f, 1f, TextAnchor.MiddleCenter, 36);
-        Stretch(introText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        introText = CreateText(introPanel.transform, 0f, 1f, 0f, 1f, 24, TextAnchor.MiddleCenter);
         introPanel.SetActive(false);
 
         pausePanel = CreatePanel("Pause", new Color(0f, 0f, 0f, 0.6f));
-        Text pauseText = CreateText(pausePanel.transform, 0f, 1f, TextAnchor.MiddleCenter, 48);
-        Stretch(pauseText.rectTransform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-        pauseText.text = "PAUSA\n<size=20>P / ESC para continuar</size>";
+        PixelText pauseText = CreateText(pausePanel.transform, 0f, 1f, 0f, 1f, 32, TextAnchor.MiddleCenter);
+        pauseText.Text = "PAUSA";
+        PixelText pauseHint = CreateText(pausePanel.transform, 0f, 1f, 0f, 0.4f, 16, TextAnchor.MiddleCenter);
+        pauseHint.Text = "P O ESC PARA CONTINUAR";
         pausePanel.SetActive(false);
 
-        // the top bar is drawn above the intro panel
-        topBar.transform.SetAsLastSibling();
+        // the top bar is drawn above the intro panel, like on the original
+        topBar = new GameObject("Top Bar", typeof(RectTransform));
+        topBar.transform.SetParent(transform, false);
+        Stretch(topBar.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -76f), new Vector2(0f, -20f));
+
+        scoreText = CreateText(topBar.transform, 0.07f, 0.27f, 0f, 1f, 20, TextAnchor.UpperLeft);
+        coinIcon = CreateText(topBar.transform, 0.30f, 0.34f, 0f, 1f, 20, TextAnchor.UpperLeft);
+        coinIcon.Text = "\n$";
+        coinIcon.Color = CoinColor;
+        coinsText = CreateText(topBar.transform, 0.32f, 0.46f, 0f, 1f, 20, TextAnchor.UpperLeft);
+        worldText = CreateText(topBar.transform, 0.47f, 0.62f, 0f, 1f, 20, TextAnchor.UpperLeft);
+        timeText = CreateText(topBar.transform, 0.65f, 0.80f, 0f, 1f, 20, TextAnchor.UpperLeft);
+        livesText = CreateText(topBar.transform, 0.85f, 0.97f, 0f, 1f, 20, TextAnchor.UpperLeft);
     }
 
     private void LateUpdate()
@@ -67,11 +70,11 @@ public class HUD : MonoBehaviour
 
         if (game == null) return;
 
-        scoreText.text = $"MARIO\n{game.score:000000}";
-        coinsText.text = $"MONEDAS\n x{game.coins:00}";
-        worldText.text = $"MUNDO\n{game.world}-{game.stage}";
-        timeText.text = $"TIEMPO\n{Mathf.CeilToInt(game.time):000}";
-        livesText.text = $"VIDAS\nx{game.lives}";
+        scoreText.Text = $"MARIO\n{game.score:000000}";
+        coinsText.Text = $"\nx{game.coins:00}";
+        worldText.Text = game.world > 0 ? $"MUNDO\n {game.world}-{game.stage}" : "MUNDO";
+        timeText.Text = timeVisible ? $"TIEMPO\n  {Mathf.CeilToInt(game.time):000}" : "TIEMPO";
+        livesText.Text = $"VIDAS\n x{game.lives}";
     }
 
     public void SetVisible(bool visible)
@@ -85,9 +88,14 @@ public class HUD : MonoBehaviour
         }
     }
 
+    public void SetTimeVisible(bool visible)
+    {
+        timeVisible = visible;
+    }
+
     public void ShowIntro(string text)
     {
-        introText.text = text;
+        introText.Text = text;
         introPanel.SetActive(true);
     }
 
@@ -110,23 +118,10 @@ public class HUD : MonoBehaviour
         return panel;
     }
 
-    public static Text CreateText(Transform parent, float minX, float maxX, TextAnchor anchor, int size = 24)
+    public static PixelText CreateText(Transform parent, float minX, float maxX, float minY, float maxY, float size, TextAnchor anchor)
     {
-        GameObject go = new GameObject("Text", typeof(RectTransform), typeof(Text), typeof(Outline));
-        go.transform.SetParent(parent, false);
-        Stretch(go.GetComponent<RectTransform>(), new Vector2(minX, 0f), new Vector2(maxX, 1f), new Vector2(0f, 0f), new Vector2(0f, -8f));
-
-        Text text = go.GetComponent<Text>();
-        text.font = DefaultFont;
-        text.fontSize = size;
-        text.fontStyle = FontStyle.Bold;
-        text.alignment = anchor;
-        text.color = Color.white;
-        text.horizontalOverflow = HorizontalWrapMode.Overflow;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
-        text.raycastTarget = false;
-
-        go.GetComponent<Outline>().effectColor = new Color(0f, 0f, 0f, 0.8f);
+        PixelText text = PixelText.Create(parent, "Text", size, anchor);
+        Stretch(text.GetComponent<RectTransform>(), new Vector2(minX, minY), new Vector2(maxX, maxY), Vector2.zero, Vector2.zero);
         return text;
     }
 

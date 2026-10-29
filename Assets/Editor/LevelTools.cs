@@ -12,6 +12,7 @@ public static class LevelTools
         "1-1",
         "1-2",
         "2-2",
+        "GameOver",
     };
 
     [MenuItem("Mario/Configurar nivel 1-1")]
@@ -65,6 +66,7 @@ public static class LevelTools
         SetupLevel11();
         Level12.Build();
         Level22.Build();
+        GameOverScene.Build();
         UpdateBuildSettings();
     }
 

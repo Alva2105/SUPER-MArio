@@ -6,7 +6,7 @@ public class PixelArtImporter : AssetPostprocessor
 {
     private void OnPreprocessTexture()
     {
-        if (!assetPath.StartsWith("Assets/Sprites/Extra/")) return;
+        if (!assetPath.StartsWith("Assets/Sprites/Extra/") && !assetPath.StartsWith("Assets/Resources/Fonts/")) return;
 
         var importer = (TextureImporter)assetImporter;
         importer.textureType = TextureImporterType.Sprite;

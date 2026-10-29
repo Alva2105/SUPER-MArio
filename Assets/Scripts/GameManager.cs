@@ -60,7 +60,7 @@ public class GameManager : MonoBehaviour
             stage = s;
             SetupLevel();
         }
-        else
+        else if (SceneManager.GetActiveScene().name != "GameOver")
         {
             NewGame();
         }
@@ -104,6 +104,8 @@ public class GameManager : MonoBehaviour
         if (TryParseLevel(scene.name, out _, out _)) {
             SetupLevel();
         } else {
+            StopAllCoroutines();
+            Time.timeScale = 1f;
             timerRunning = false;
             hud.SetVisible(false);
         }
@@ -117,6 +119,7 @@ public class GameManager : MonoBehaviour
         timerRunning = true;
 
         hud.SetVisible(true);
+        hud.SetTimeVisible(true);
         StopAllCoroutines();
         StartCoroutine(LevelIntro(settings != null ? settings.music : "music_overworld"));
     }
@@ -145,9 +148,28 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        // TODO: show game over screen
+        timerRunning = false;
+        Time.timeScale = 1f;
 
-        NewGame();
+        if (Application.CanStreamedLevelBeLoaded("GameOver")) {
+            SceneManager.LoadScene("GameOver");
+        } else {
+            NewGame();
+        }
+    }
+
+    // starts again on the level where the game was lost
+    public void ContinueGame()
+    {
+        lives = 3;
+        coins = 0;
+        score = 0;
+
+        if (world > 0) {
+            LoadLevel(world, stage);
+        } else {
+            LoadLevel(1, 1);
+        }
     }
 
     public void LoadLevel(int world, int stage)
