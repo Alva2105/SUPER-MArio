@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnEnable()
     {
-        rigidbody.isKinematic = false;
+        rigidbody.bodyType = RigidbodyType2D.Dynamic;
         collider.enabled = true;
         velocity = Vector2.zero;
         jumping = false;
@@ -39,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnDisable()
     {
-        rigidbody.isKinematic = true;
+        rigidbody.bodyType = RigidbodyType2D.Kinematic;
         collider.enabled = false;
         velocity = Vector2.zero;
         jumping = false;
