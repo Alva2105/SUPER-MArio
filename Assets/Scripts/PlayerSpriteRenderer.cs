@@ -18,6 +18,19 @@ public class PlayerSpriteRenderer : MonoBehaviour
 
     private void LateUpdate()
     {
+        // paddle while swimming, with the jump pose right after each stroke
+        if (movement.swimming && !movement.grounded)
+        {
+            bool stroke = Time.time - movement.lastStroke < 0.3f;
+            run.enabled = !stroke;
+
+            if (stroke) {
+                spriteRenderer.sprite = jump;
+            }
+
+            return;
+        }
+
         run.enabled = movement.running;
 
         if (movement.jumping) {

@@ -30,6 +30,7 @@ public class LevelSettings : MonoBehaviour
         public float cameraY = 6.5f;
         public Color background = Color.black;
         public string music;
+        public bool water;
 
         public bool Contains(Vector2 point)
         {
@@ -41,6 +42,14 @@ public class LevelSettings : MonoBehaviour
     public CameraZone[] zones = new CameraZone[0];
 
     public static LevelSettings Current { get; private set; }
+
+    public float waterSurfaceY = 10.5f;
+
+    public bool IsWater(Vector2 point)
+    {
+        CameraZone zone = FindZone(point);
+        return zone != null && zone.water;
+    }
 
     public CameraZone FindZone(Vector2 point)
     {

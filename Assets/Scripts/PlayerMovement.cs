@@ -16,6 +16,15 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce => (2f * maxJumpHeight) / (maxJumpTime / 2f);
     public float gravity => (-2f * maxJumpHeight) / Mathf.Pow(maxJumpTime / 2f, 2f);
 
+    [Header("Swimming")]
+    public float swimSpeed = 4.5f;
+    public float swimStroke = 5f;
+    public float swimGravity = -10f;
+    public float maxSinkSpeed = -3.5f;
+
+    public bool swimming { get; private set; }
+    public float lastStroke { get; private set; } = -10f;
+
     // set by moving platforms while mario stands on them
     public Vector2 platformVelocity { get; set; }
 
@@ -51,15 +60,43 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        swimming = LevelSettings.Current != null && LevelSettings.Current.IsWater(rigidbody.position);
+
         HorizontalMovement();
 
         grounded = rigidbody.Raycast(Vector2.down);
+
+        if (swimming)
+        {
+            SwimMovement();
+            return;
+        }
 
         if (grounded) {
             GroundedMovement();
         }
 
         ApplyGravity();
+    }
+
+    private void SwimMovement()
+    {
+        if (grounded) {
+            velocity.y = Mathf.Max(velocity.y, 0f);
+        }
+
+        jumping = !grounded;
+
+        // every press of the jump button is a stroke, even in mid water
+        if (Input.GetButtonDown("Jump"))
+        {
+            velocity.y = swimStroke;
+            lastStroke = Time.time;
+            AudioManager.Play("swim", 0.6f);
+        }
+
+        velocity.y += swimGravity * Time.deltaTime;
+        velocity.y = Mathf.Max(velocity.y, maxSinkSpeed);
     }
 
     private void FixedUpdate()
@@ -73,6 +110,13 @@ public class PlayerMovement : MonoBehaviour
         Vector2 rightEdge = camera.ScreenToWorldPoint(new Vector2(Screen.width, Screen.height));
         position.x = Mathf.Clamp(position.x, leftEdge.x + 0.5f, rightEdge.x - 0.5f);
 
+        // mario can't swim out of the water
+        if (swimming && position.y > LevelSettings.Current.waterSurfaceY)
+        {
+            position.y = LevelSettings.Current.waterSurfaceY;
+            velocity.y = Mathf.Min(velocity.y, 0f);
+        }
+
         rigidbody.MovePosition(position);
     }
 
@@ -80,7 +124,8 @@ public class PlayerMovement : MonoBehaviour
     {
         // accelerate / decelerate
         inputAxis = Input.GetAxis("Horizontal");
-        velocity.x = Mathf.MoveTowards(velocity.x, inputAxis * moveSpeed, moveSpeed * Time.deltaTime);
+        float speed = swimming ? swimSpeed : moveSpeed;
+        velocity.x = Mathf.MoveTowards(velocity.x, inputAxis * speed, speed * Time.deltaTime);
 
         // check if running into a wall
         if (rigidbody.Raycast(Vector2.right * velocity.x)) {

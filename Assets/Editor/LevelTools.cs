@@ -11,6 +11,7 @@ public static class LevelTools
     public static readonly string[] SceneOrder = {
         "1-1",
         "1-2",
+        "2-2",
     };
 
     [MenuItem("Mario/Configurar nivel 1-1")]
@@ -63,6 +64,7 @@ public static class LevelTools
     {
         SetupLevel11();
         Level12.Build();
+        Level22.Build();
         UpdateBuildSettings();
     }
 

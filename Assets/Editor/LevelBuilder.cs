@@ -20,6 +20,7 @@ public class LevelBuilder
 
     public string groundPrefab = "Ground";
     public string brickPrefab = "Brick";
+    public Sprite groundSprite;
     public Sprite coinSprite;
 
     public LevelBuilder(string sceneName)
@@ -86,7 +87,80 @@ public class LevelBuilder
 
     public GameObject Ground(int x0, int x1, int top = 1)
     {
-        return Solid(groundPrefab, x0, top - 1, x1, top);
+        return Block(x0, top - 1, x1, top);
+    }
+
+    // solid made of the ground tile of the current theme
+    public GameObject Block(int x0, int y0, int x1, int y1, string group = "Ground")
+    {
+        GameObject go = Solid(groundPrefab, x0, y0, x1, y1, group);
+
+        if (groundSprite != null)
+        {
+            var renderer = go.GetComponent<SpriteRenderer>();
+            renderer.sprite = groundSprite;
+            Record(renderer);
+        }
+
+        return go;
+    }
+
+    // non solid tiled strip, used for water and lava surfaces
+    public GameObject Strip(string sprite, float x0, float x1, float y, int sortingOrder, string group = "Background")
+    {
+        GameObject go = Create(sprite, (x0 + x1) / 2f, y, group);
+
+        var renderer = go.AddComponent<SpriteRenderer>();
+        renderer.sprite = LoadSprite(sprite);
+        renderer.drawMode = SpriteDrawMode.Tiled;
+        renderer.size = new Vector2(x1 - x0 + 1f, 1f);
+        renderer.sortingOrder = sortingOrder;
+        return go;
+    }
+
+    public GameObject SpriteObject(string sprite, float x, float y, int sortingOrder = -1, string group = "Background")
+    {
+        GameObject go = Create(sprite, x, y, group);
+        var renderer = go.AddComponent<SpriteRenderer>();
+        renderer.sprite = LoadSprite(sprite);
+        renderer.sortingOrder = sortingOrder;
+        return go;
+    }
+
+    // creates (or replaces) an enemy prefab made only from code
+    public static GameObject EnemyPrefab<T>(string name, Sprite[] frames, Vector2 colliderSize, System.Action<T> setup = null) where T : Component
+    {
+        var go = new GameObject(name);
+        go.layer = LayerMask.NameToLayer("Enemy");
+
+        var renderer = go.AddComponent<SpriteRenderer>();
+        renderer.sprite = frames[0];
+        renderer.sortingOrder = 4;
+
+        if (frames.Length > 1)
+        {
+            var animation = go.AddComponent<AnimatedSprite>();
+            animation.sprites = frames;
+            animation.framerate = 0.2f;
+        }
+
+        var collider = go.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        collider.size = colliderSize;
+
+        var body = go.AddComponent<Rigidbody2D>();
+        body.bodyType = RigidbodyType2D.Kinematic;
+
+        var death = go.AddComponent<DeathAnimation>();
+        death.spriteRenderer = renderer;
+        death.enabled = false;
+
+        T script = go.AddComponent<T>();
+        setup?.Invoke(script);
+
+        GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, $"Assets/Prefabs/{name}.prefab");
+        Object.DestroyImmediate(go);
+        return prefab;
     }
 
     public static void Resize(GameObject go, Vector2 size)
