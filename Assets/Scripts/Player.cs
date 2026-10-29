@@ -35,10 +35,14 @@ public class Player : MonoBehaviour
 
     public void Death()
     {
+        if (dead) return;
+
         smallRenderer.enabled = false;
         bigRenderer.enabled = false;
         deathAnimation.enabled = true;
 
+        AudioManager.StopMusic();
+        AudioManager.Play("death");
         GameManager.Instance.ResetLevel(3f);
     }
 
@@ -56,6 +60,8 @@ public class Player : MonoBehaviour
 
     public void Shrink()
     {
+        AudioManager.Play("pipe");
+
         smallRenderer.enabled = true;
         bigRenderer.enabled = false;
         activeRenderer = smallRenderer;

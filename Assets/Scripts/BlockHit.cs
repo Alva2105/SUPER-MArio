@@ -13,15 +13,22 @@ public class BlockHit : MonoBehaviour
         if (!animating && maxHits != 0 && collision.gameObject.CompareTag("Player"))
         {
             if (collision.transform.DotTest(transform, Vector2.up)) {
-                Hit();
+                Hit(collision.gameObject.GetComponent<Player>());
             }
         }
     }
 
-    private void Hit()
+    private void Hit(Player player)
     {
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.enabled = true; // show if hidden
+
+        // plain bricks break when mario is big
+        if (item == null && maxHits < 0 && player != null && player.big)
+        {
+            Break(spriteRenderer.sprite);
+            return;
+        }
 
         maxHits--;
 
@@ -29,11 +36,37 @@ public class BlockHit : MonoBehaviour
             spriteRenderer.sprite = emptyBlock;
         }
 
-        if (item != null) {
+        if (item != null)
+        {
             Instantiate(item, transform.position, Quaternion.identity);
+
+            if (item.GetComponent<BlockCoin>() == null) {
+                AudioManager.Play("powerup_appear");
+            }
+        }
+        else
+        {
+            AudioManager.Play("bump");
         }
 
         StartCoroutine(Animate());
+    }
+
+    private void Break(Sprite sprite)
+    {
+        AudioManager.Play("break");
+        GameManager.Instance.AddScore(50);
+
+        Vector2[] velocities = {
+            new Vector2(-3f, 12f), new Vector2(3f, 12f),
+            new Vector2(-3f, 8f), new Vector2(3f, 8f),
+        };
+
+        foreach (Vector2 velocity in velocities) {
+            Debris.Spawn(sprite, transform.position, velocity);
+        }
+
+        Destroy(gameObject);
     }
 
     private IEnumerator Animate()

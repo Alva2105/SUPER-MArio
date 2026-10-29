@@ -102,6 +102,7 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = jumpForce;
             jumping = true;
+            AudioManager.Play("jump");
         }
     }
 

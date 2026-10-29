@@ -53,6 +53,8 @@ public class Koopa : MonoBehaviour
     private void EnterShell()
     {
         shelled = true;
+        AudioManager.Play("stomp");
+        GameManager.Instance.AddScore(100);
 
         GetComponent<SpriteRenderer>().sprite = shellSprite;
         GetComponent<AnimatedSprite>().enabled = false;
@@ -62,6 +64,7 @@ public class Koopa : MonoBehaviour
     private void PushShell(Vector2 direction)
     {
         pushed = true;
+        AudioManager.Play("kick");
 
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
 
@@ -75,6 +78,9 @@ public class Koopa : MonoBehaviour
 
     private void Hit()
     {
+        AudioManager.Play("kick");
+        GameManager.Instance.AddScore(200);
+
         GetComponent<AnimatedSprite>().enabled = false;
         GetComponent<DeathAnimation>().enabled = true;
         Destroy(gameObject, 3f);

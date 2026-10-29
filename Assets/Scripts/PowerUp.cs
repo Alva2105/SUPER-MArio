@@ -24,6 +24,7 @@ public class PowerUp : MonoBehaviour
         switch (type)
         {
             case Type.Coin:
+                AudioManager.Play("coin");
                 GameManager.Instance.AddCoin();
                 break;
 
@@ -32,10 +33,14 @@ public class PowerUp : MonoBehaviour
                 break;
 
             case Type.MagicMushroom:
+                AudioManager.Play("powerup");
+                GameManager.Instance.AddScore(1000);
                 player.GetComponent<Player>().Grow();
                 break;
 
             case Type.Starpower:
+                AudioManager.Play("powerup");
+                GameManager.Instance.AddScore(1000);
                 player.GetComponent<Player>().Starpower();
                 break;
         }

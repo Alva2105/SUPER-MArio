@@ -8,6 +8,8 @@ public class DeathBarrier : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             other.gameObject.SetActive(false);
+            AudioManager.StopMusic();
+            AudioManager.Play("death");
             GameManager.Instance.ResetLevel(3f);
         }
         else

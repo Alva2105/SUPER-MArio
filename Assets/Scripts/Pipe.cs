@@ -21,6 +21,7 @@ public class Pipe : MonoBehaviour
     private IEnumerator Enter(Transform player)
     {
         player.GetComponent<PlayerMovement>().enabled = false;
+        AudioManager.Play("pipe");
 
         Vector3 enteredPosition = transform.position + enterDirection;
         Vector3 enteredScale = Vector3.one * 0.5f;
@@ -29,17 +30,19 @@ public class Pipe : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         var sideSrolling = Camera.main.GetComponent<SideScrolling>();
-        sideSrolling.SetUnderground(connection.position.y < sideSrolling.undergroundThreshold);
 
         if (exitDirection != Vector3.zero)
         {
             player.position = connection.position - exitDirection;
+            sideSrolling.SetUnderground(connection.position.y < sideSrolling.undergroundThreshold);
+            AudioManager.Play("pipe");
             yield return Move(player, connection.position + exitDirection, Vector3.one);
         }
         else
         {
             player.position = connection.position;
             player.localScale = Vector3.one;
+            sideSrolling.SetUnderground(connection.position.y < sideSrolling.undergroundThreshold);
         }
 
         player.GetComponent<PlayerMovement>().enabled = true;
