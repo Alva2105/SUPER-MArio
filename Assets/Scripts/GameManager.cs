@@ -422,7 +422,7 @@ public class GameManager : MonoBehaviour
         bool paused = Time.timeScale > 0f;
         Time.timeScale = paused ? 0f : 1f;
         hud.SetPaused(paused);
-        AudioManager.Play("select");
+        AudioManager.Play("pause");
     }
 
 }

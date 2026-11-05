@@ -44,7 +44,7 @@ public class MainMenu : MonoBehaviour
         selected = (index + options.Length) % options.Length;
 
         if (playSound) {
-            AudioManager.Play("select");
+            AudioManager.Play("beep");
         }
 
         // the cursor stays to the left of the selected option
@@ -55,7 +55,7 @@ public class MainMenu : MonoBehaviour
 
     private void Confirm()
     {
-        AudioManager.Play("select");
+        AudioManager.Play("beep");
         GameManager.Instance.NewGame(selected);
     }
 

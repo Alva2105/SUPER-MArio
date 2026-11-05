@@ -43,7 +43,7 @@ public class BlockHit : MonoBehaviour
             Instantiate(item, transform.position, Quaternion.identity);
 
             if (item.GetComponent<BlockCoin>() == null) {
-                AudioManager.Play("powerup_appear");
+                AudioManager.Play("item");
             }
         }
         else

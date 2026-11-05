@@ -99,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = swimStroke;
             lastStroke = Time.time;
-            AudioManager.Play("swim", 0.6f);
+            AudioManager.Play("stompswim", 0.6f);
         }
 
         velocity.y += swimGravity * Time.deltaTime;
@@ -158,8 +158,8 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = jumpForce;
             jumping = true;
-            // big mario has his own, deeper jump sound
-            AudioManager.Play(player != null && player.big ? "jump_big" : "jump");
+            // big mario has his own, deeper jump sound, like the original
+            AudioManager.Play(player != null && player.big ? "jump" : "jumpsmall");
         }
     }
 
