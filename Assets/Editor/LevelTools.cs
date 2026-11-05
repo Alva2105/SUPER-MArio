@@ -9,6 +9,7 @@ public static class LevelTools
     public const string ScenesFolder = "Assets/Scenes";
 
     public static readonly string[] SceneOrder = {
+        "Menu",
         "1-1",
         "1-2",
         "2-2",

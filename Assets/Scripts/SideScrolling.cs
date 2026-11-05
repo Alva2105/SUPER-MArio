@@ -38,7 +38,9 @@ public class SideScrolling : MonoBehaviour
         }
         else
         {
-            minX = transform.position.x;
+            // minX is the left edge of the view, so scenes without settings
+            // (like the menu) keep the view where the camera was placed
+            minX = transform.position.x - halfWidth;
         }
 
         UpdateZone(false);

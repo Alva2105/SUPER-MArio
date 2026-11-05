@@ -43,6 +43,6 @@ public class CastleAxe : MonoBehaviour
         GameManager.Instance.hud.ShowIntro("GRACIAS MARIO!\n\n\nTU AVENTURA HA TERMINADO\n\n\nPUNTAJE " + GameManager.Instance.score.ToString("000000"));
         yield return new WaitForSeconds(6f);
         GameManager.Instance.hud.HideIntro();
-        GameManager.Instance.NewGame();
+        GameManager.Instance.BackToMenu();
     }
 }

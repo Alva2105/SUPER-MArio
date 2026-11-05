@@ -54,13 +54,19 @@ public class GameManager : MonoBehaviour
         coins = 0;
         score = 0;
 
-        if (TryParseLevel(SceneManager.GetActiveScene().name, out int w, out int s))
+        string scene = SceneManager.GetActiveScene().name;
+
+        if (TryParseLevel(scene, out int w, out int s))
         {
             world = w;
             stage = s;
             SetupLevel();
         }
-        else if (SceneManager.GetActiveScene().name != "GameOver")
+        else if (scene == "Menu")
+        {
+            SetupMenu();
+        }
+        else if (scene != "GameOver")
         {
             NewGame();
         }
@@ -68,7 +74,8 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)) {
+        // pause only exists inside a level
+        if (inLevel && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))) {
             TogglePause();
         }
 
@@ -103,16 +110,48 @@ public class GameManager : MonoBehaviour
     {
         if (TryParseLevel(scene.name, out _, out _)) {
             SetupLevel();
+        } else if (scene.name == "Menu") {
+            SetupMenu();
         } else {
-            StopAllCoroutines();
-            Time.timeScale = 1f;
-            timerRunning = false;
+            LeaveLevel();
             hud.SetVisible(false);
+        }
+    }
+
+    private bool inLevel;
+
+    private void LeaveLevel()
+    {
+        StopAllCoroutines();
+        Time.timeScale = 1f;
+        timerRunning = false;
+        inLevel = false;
+        hud.SetPaused(false);
+    }
+
+    // title screen: top bar without the time, like the original
+    private void SetupMenu()
+    {
+        LeaveLevel();
+        world = 1;
+        stage = 1;
+        hud.SetVisible(true);
+        hud.SetTimeVisible(false);
+        AudioManager.PlayMusic("music_title");
+    }
+
+    public void BackToMenu()
+    {
+        if (Application.CanStreamedLevelBeLoaded("Menu")) {
+            SceneManager.LoadScene("Menu");
+        } else {
+            NewGame();
         }
     }
 
     private void SetupLevel()
     {
+        inLevel = true;
         LevelSettings settings = FindAnyObjectByType<LevelSettings>();
 
         time = settings != null ? settings.timeLimit : 400;

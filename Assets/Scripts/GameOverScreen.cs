@@ -50,11 +50,12 @@ public class GameOverScreen : MonoBehaviour
 
         game.hud.SetTimeVisible(true);
 
-        // like holding start on the original, Enter continues on the same world
+        // like holding start on the original, Enter continues on the same world;
+        // otherwise it goes back to the title screen
         if (Input.GetKey(KeyCode.Return)) {
             game.ContinueGame();
         } else {
-            game.NewGame();
+            game.BackToMenu();
         }
     }
 
