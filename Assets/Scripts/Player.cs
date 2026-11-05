@@ -76,6 +76,10 @@ public class Player : MonoBehaviour
         ClearOverrides();
         SetEnemyCollision(true);
 
+        if (starMaterial != null) {
+            SetStarMaterial(false);
+        }
+
         smallRenderer.enabled = false;
         bigRenderer.enabled = false;
         deathAnimation.enabled = true;
@@ -201,31 +205,81 @@ public class Player : MonoBehaviour
         Physics2D.IgnoreLayerCollision(player, shell, !enabled);
     }
 
+    // the star lasts 35 ticks of 21 frames; on the last 4 ticks the colors
+    // change every 4 frames instead of every frame, like the original
+    private const float StarDuration = 12.25f;
+    private const float SlowCycleTime = 1.4f;
+
+    private Coroutine starRoutine;
+    private Material starMaterial;
+    private Material normalMaterial;
+
     public void Starpower()
     {
-        StartCoroutine(StarpowerAnimation());
+        if (starRoutine != null) {
+            StopCoroutine(starRoutine);
+        }
+
+        starRoutine = StartCoroutine(StarpowerAnimation());
+    }
+
+    private void SetStarMaterial(bool star)
+    {
+        if (starMaterial == null)
+        {
+            normalMaterial = smallRenderer.spriteRenderer.sharedMaterial;
+            starMaterial = new Material(Resources.Load<Shader>("Shaders/StarPalette"));
+
+            bool luigi = GameManager.Instance != null && GameManager.Instance.currentPlayer == 1;
+            Color[][] from = luigi ? StarColors.Luigi : StarColors.Mario;
+            string[] roles = { "A", "B", "C" };
+
+            for (int i = 0; i < roles.Length; i++)
+            {
+                starMaterial.SetColor($"_From{roles[i]}1", from[i][0]);
+                starMaterial.SetColor($"_From{roles[i]}2", from[i][1]);
+            }
+        }
+
+        smallRenderer.spriteRenderer.sharedMaterial = star ? starMaterial : normalMaterial;
+        bigRenderer.spriteRenderer.sharedMaterial = star ? starMaterial : normalMaterial;
     }
 
     private IEnumerator StarpowerAnimation()
     {
         starpower = true;
+        SetStarMaterial(true);
 
         float elapsed = 0f;
-        float duration = 10f;
 
-        while (elapsed < duration)
+        while (elapsed < StarDuration)
         {
             elapsed += Time.deltaTime;
 
-            if (Time.frameCount % 4 == 0) {
-                activeRenderer.spriteRenderer.color = Random.ColorHSV(0f, 1f, 1f, 1f, 1f, 1f);
+            int frame = Mathf.FloorToInt(elapsed * 60f);
+            bool slow = StarDuration - elapsed < SlowCycleTime;
+            int step = (slow ? frame / 4 : frame) % 4;
+
+            // step 0 is the player's own colors
+            if (step == 0)
+            {
+                starMaterial.SetFloat("_Swap", 0f);
+            }
+            else
+            {
+                Color[] palette = StarColors.ForCurrentArea()[step - 1];
+                starMaterial.SetColor("_ToA", palette[0]);
+                starMaterial.SetColor("_ToB", palette[1]);
+                starMaterial.SetColor("_ToC", palette[2]);
+                starMaterial.SetFloat("_Swap", 1f);
             }
 
             yield return null;
         }
 
-        activeRenderer.spriteRenderer.color = Color.white;
+        SetStarMaterial(false);
         starpower = false;
+        starRoutine = null;
     }
 
 }
