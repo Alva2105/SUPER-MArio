@@ -37,10 +37,7 @@ public class GameOverScreen : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
 
         PixelText title = HUD.CreateText(root.transform, 0f, 1f, 0f, 1f, 20, TextAnchor.MiddleCenter);
-        // like the original, the name only appears in a two player game
-        GameManager game = GameManager.Instance;
-        bool twoPlayers = game != null && game.players == 2;
-        title.Text = twoPlayers ? $"{game.playerName}\n\nGAME OVER" : "GAME OVER";
+        title.Text = "GAME OVER";
     }
 
     private IEnumerator Sequence()
@@ -54,7 +51,7 @@ public class GameOverScreen : MonoBehaviour
         game.hud.SetTimeVisible(true);
 
         // like holding start on the original, Enter continues on the same world;
-        // otherwise the other player takes over or it goes back to the menu
+        // otherwise it goes back to the menu
         game.AfterGameOver(Input.GetKey(KeyCode.Return));
     }
 

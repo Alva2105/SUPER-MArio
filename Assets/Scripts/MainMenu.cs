@@ -1,7 +1,7 @@
 using UnityEngine;
 
-// Title screen like the original: the mushroom cursor picks 1 or 2 players
-// and TOP shows the best score. Esc closes the game.
+// Title screen like the original: option 1 plays with Mario and option 2
+// with Luigi, TOP shows the best score. Esc closes the game.
 public class MainMenu : MonoBehaviour
 {
     public RectTransform cursor;
@@ -53,7 +53,7 @@ public class MainMenu : MonoBehaviour
     private void Confirm()
     {
         AudioManager.Play("select");
-        GameManager.Instance.NewGame(selected + 1);
+        GameManager.Instance.NewGame(selected);
     }
 
     private void Quit()
