@@ -16,6 +16,9 @@ public class DevTools : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Initialize()
     {
+        // testing tools only exist in the editor and in development builds
+        if (!Application.isEditor && !Debug.isDebugBuild) return;
+
         var go = new GameObject("Dev Tools");
         DontDestroyOnLoad(go);
         var tools = go.AddComponent<DevTools>();
