@@ -10,24 +10,48 @@ public class Player : MonoBehaviour
     public CapsuleCollider2D capsuleCollider { get; private set; }
     public DeathAnimation deathAnimation { get; private set; }
 
-    public bool big => bigRenderer.enabled;
+    public bool big { get; private set; }
     public bool dead => deathAnimation.enabled;
     public bool starpower { get; private set; }
     public bool climbing { get; set; }
 
+    // the whole game stops while mario changes size, like the original
+    public static bool Transforming { get; private set; }
+
     // enemies stomped in a row without touching the ground
     public int stompCombo { get; set; }
+
+    private Sprite midSprite;
+
+    // frames of the original animations: S small, M middle, B big,
+    // J big mario ducking (jump sprite) and s small mario jumping
+    private const string GrowFrames = "SMSMSMBSMBSB";
+    private const string ShrinkFrames = "JsJsJsJsJsS";
+    private const float FrameTime = 0.067f;
 
     private void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider2D>();
         deathAnimation = GetComponent<DeathAnimation>();
         activeRenderer = smallRenderer;
+        big = bigRenderer.enabled;
+        // luigi (second player) has his own colors for the middle frame
+        bool luigi = GameManager.Instance != null && GameManager.Instance.currentPlayer == 1;
+        midSprite = Resources.Load<Sprite>(luigi ? "Sprites/Luigi_Mid_Grow" : "Sprites/Mario_Mid_Grow");
+    }
+
+    private void OnDestroy()
+    {
+        if (Transforming)
+        {
+            Transforming = false;
+            Time.timeScale = 1f;
+        }
     }
 
     public void Hit()
     {
-        if (!dead && !starpower)
+        if (!dead && !starpower && !Transforming)
         {
             if (big) {
                 Shrink();
@@ -41,6 +65,9 @@ public class Player : MonoBehaviour
     {
         if (dead) return;
 
+        StopAllCoroutines();
+        ClearOverrides();
+
         smallRenderer.enabled = false;
         bigRenderer.enabled = false;
         deathAnimation.enabled = true;
@@ -52,51 +79,71 @@ public class Player : MonoBehaviour
 
     public void Grow()
     {
-        smallRenderer.enabled = false;
-        bigRenderer.enabled = true;
+        if (big) return;
+
+        big = true;
         activeRenderer = bigRenderer;
 
         capsuleCollider.size = new Vector2(1f, 2f);
         capsuleCollider.offset = new Vector2(0f, 0.5f);
 
-        StartCoroutine(ScaleAnimation());
+        StartCoroutine(SizeAnimation(GrowFrames));
     }
 
     public void Shrink()
     {
         AudioManager.Play("pipe");
 
-        smallRenderer.enabled = true;
-        bigRenderer.enabled = false;
+        big = false;
         activeRenderer = smallRenderer;
 
         capsuleCollider.size = new Vector2(1f, 1f);
         capsuleCollider.offset = new Vector2(0f, 0f);
 
-        StartCoroutine(ScaleAnimation());
+        StartCoroutine(SizeAnimation(ShrinkFrames));
     }
 
-    private IEnumerator ScaleAnimation()
+    private IEnumerator SizeAnimation(string frames)
     {
-        float elapsed = 0f;
-        float duration = 0.5f;
+        Transforming = true;
+        Time.timeScale = 0f;
 
-        while (elapsed < duration)
+        foreach (char frame in frames)
         {
-            elapsed += Time.deltaTime;
-
-            if (Time.frameCount % 4 == 0)
-            {
-                smallRenderer.enabled = !smallRenderer.enabled;
-                bigRenderer.enabled = !smallRenderer.enabled;
-            }
-
-            yield return null;
+            ShowFrame(frame);
+            yield return new WaitForSecondsRealtime(FrameTime);
         }
 
-        smallRenderer.enabled = false;
-        bigRenderer.enabled = false;
-        activeRenderer.enabled = true;
+        ClearOverrides();
+        smallRenderer.enabled = activeRenderer == smallRenderer;
+        bigRenderer.enabled = activeRenderer == bigRenderer;
+
+        Transforming = false;
+        Time.timeScale = 1f;
+    }
+
+    private void ShowFrame(char frame)
+    {
+        bool showBig = frame == 'M' || frame == 'B' || frame == 'J';
+        smallRenderer.enabled = !showBig;
+        bigRenderer.enabled = showBig;
+
+        switch (frame)
+        {
+            case 'M': bigRenderer.overrideSprite = midSprite != null ? midSprite : bigRenderer.idle; break;
+            case 'J': bigRenderer.overrideSprite = bigRenderer.jump; break;
+            case 's': smallRenderer.overrideSprite = smallRenderer.jump; break;
+            default:
+                smallRenderer.overrideSprite = null;
+                bigRenderer.overrideSprite = null;
+                break;
+        }
+    }
+
+    private void ClearOverrides()
+    {
+        smallRenderer.overrideSprite = null;
+        bigRenderer.overrideSprite = null;
     }
 
     public void Starpower()

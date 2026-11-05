@@ -23,8 +23,18 @@ public class PlayerSpriteRenderer : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    // frame forced by the grow / shrink animations of the player
+    public Sprite overrideSprite { get; set; }
+
     private void LateUpdate()
     {
+        if (overrideSprite != null)
+        {
+            run.enabled = false;
+            spriteRenderer.sprite = overrideSprite;
+            return;
+        }
+
         // sliding down the flag pole
         if (player.climbing && climb != null && climb.Length > 0)
         {

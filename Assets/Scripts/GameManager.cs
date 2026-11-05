@@ -458,7 +458,8 @@ public class GameManager : MonoBehaviour
 
     private void TogglePause()
     {
-        if (hud.introVisible) return;
+        // mario changing size also stops the game, it can't be paused then
+        if (hud.introVisible || Player.Transforming) return;
 
         bool paused = Time.timeScale > 0f;
         Time.timeScale = paused ? 0f : 1f;
