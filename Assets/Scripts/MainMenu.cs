@@ -9,6 +9,7 @@ public class MainMenu : MonoBehaviour
     public PixelText topText;
 
     private int selected;
+    private float cursorOffset;
 
     private void Start()
     {
@@ -18,6 +19,8 @@ public class MainMenu : MonoBehaviour
             topText.Text = $"TOP-{top:000000}";
         }
 
+        // the cursor keeps its height difference with the option text
+        cursorOffset = cursor.anchoredPosition.y - options[0].anchoredPosition.y;
         Select(0, false);
     }
 
@@ -46,7 +49,7 @@ public class MainMenu : MonoBehaviour
 
         // the cursor stays to the left of the selected option
         Vector2 position = cursor.anchoredPosition;
-        position.y = options[selected].anchoredPosition.y;
+        position.y = options[selected].anchoredPosition.y + cursorOffset;
         cursor.anchoredPosition = position;
     }
 

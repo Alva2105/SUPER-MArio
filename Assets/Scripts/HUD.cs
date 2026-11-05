@@ -82,7 +82,7 @@ public class HUD : MonoBehaviour
         // the top bar is drawn above the intro panel, like on the original
         topBar = new GameObject("Top Bar", typeof(RectTransform));
         topBar.transform.SetParent(transform, false);
-        Stretch(topBar.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -76f), new Vector2(0f, -20f));
+        Stretch(topBar.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(0f, -66f), new Vector2(0f, -10f));
 
         scoreText = CreateText(topBar.transform, 0.07f, 0.27f, 0f, 1f, 20, TextAnchor.UpperLeft);
         coinIcon = CreateText(topBar.transform, 0.30f, 0.34f, 0f, 1f, 20, TextAnchor.UpperLeft);

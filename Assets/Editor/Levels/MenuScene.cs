@@ -80,7 +80,10 @@ public static class MenuScene
         Text("Copyright", title.transform, "©2026 VIDEOJUEGOS", 80, 120, Pink);
         RectTransform one = Text("1 Jugador", title.transform, "1 JUGADOR", 88, 144, Color.white);
         RectTransform two = Text("2 Jugadores", title.transform, "2 JUGADORES", 88, 160, Color.white);
-        RectTransform cursor = Image("Cursor", title.transform, "TitleCursor", 72, 144, 8, 8);
+        // the magic mushroom as cursor; 32/3 px keeps its pixels even at 720p and 1080p
+        const float CursorSize = 32f / 3f;
+        RectTransform cursor = Image("Cursor", title.transform, "Assets/Sprites/MagicMushroom.png",
+            88f - 4f - CursorSize, 144f - (CursorSize - 8f) / 2f, CursorSize, CursorSize);
         RectTransform top = Text("Top", title.transform, "TOP-000000", 96, 184, Color.white);
 
         MainMenu menu = title.AddComponent<MainMenu>();
@@ -108,7 +111,8 @@ public static class MenuScene
     {
         GameObject go = new GameObject(name, typeof(RectTransform), typeof(Image));
         Image image = go.GetComponent<Image>();
-        image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Sprites/Extra/{sprite}.png");
+        string path = sprite.StartsWith("Assets/") ? sprite : $"Assets/Sprites/Extra/{sprite}.png";
+        image.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
         image.raycastTarget = false;
         return Place(go, parent, x, y, width, height);
     }
