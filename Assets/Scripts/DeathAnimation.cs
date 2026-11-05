@@ -65,6 +65,12 @@ public class DeathAnimation : MonoBehaviour
 
         Vector3 velocity = Vector3.up * jumpVelocity;
 
+        // like the original, mario stays still for a moment before jumping
+        // off the screen, in time with the death jingle
+        if (GetComponent<Player>() != null) {
+            yield return new WaitForSeconds(0.5f);
+        }
+
         while (elapsed < duration)
         {
             transform.position += velocity * Time.deltaTime;

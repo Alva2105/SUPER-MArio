@@ -15,6 +15,10 @@ public class Player : MonoBehaviour
     public bool starpower { get; private set; }
     public bool climbing { get; set; }
 
+    // after being hit mario blinks and enemies can't hurt him for a while
+    public bool invulnerable { get; private set; }
+    public float invulnerableTime = 2f;
+
     // the whole game stops while mario changes size, like the original
     public static bool Transforming { get; private set; }
 
@@ -22,6 +26,7 @@ public class Player : MonoBehaviour
     public int stompCombo { get; set; }
 
     private Sprite midSprite;
+    private Coroutine invulnerability;
 
     // frames of the original animations: S small, M middle, B big,
     // J big mario ducking (jump sprite) and s small mario jumping
@@ -47,11 +52,13 @@ public class Player : MonoBehaviour
             Transforming = false;
             Time.timeScale = 1f;
         }
+
+        SetEnemyCollision(true);
     }
 
     public void Hit()
     {
-        if (!dead && !starpower && !Transforming)
+        if (!dead && !starpower && !invulnerable && !Transforming)
         {
             if (big) {
                 Shrink();
@@ -67,6 +74,7 @@ public class Player : MonoBehaviour
 
         StopAllCoroutines();
         ClearOverrides();
+        SetEnemyCollision(true);
 
         smallRenderer.enabled = false;
         bigRenderer.enabled = false;
@@ -81,18 +89,19 @@ public class Player : MonoBehaviour
     {
         if (big) return;
 
+        StopInvulnerability();
         big = true;
         activeRenderer = bigRenderer;
 
         capsuleCollider.size = new Vector2(1f, 2f);
         capsuleCollider.offset = new Vector2(0f, 0.5f);
 
-        StartCoroutine(SizeAnimation(GrowFrames));
+        StartCoroutine(SizeAnimation(GrowFrames, false));
     }
 
     public void Shrink()
     {
-        AudioManager.Play("pipe");
+        AudioManager.Play("damage");
 
         big = false;
         activeRenderer = smallRenderer;
@@ -100,10 +109,10 @@ public class Player : MonoBehaviour
         capsuleCollider.size = new Vector2(1f, 1f);
         capsuleCollider.offset = new Vector2(0f, 0f);
 
-        StartCoroutine(SizeAnimation(ShrinkFrames));
+        StartCoroutine(SizeAnimation(ShrinkFrames, true));
     }
 
-    private IEnumerator SizeAnimation(string frames)
+    private IEnumerator SizeAnimation(string frames, bool thenInvulnerable)
     {
         Transforming = true;
         Time.timeScale = 0f;
@@ -120,6 +129,10 @@ public class Player : MonoBehaviour
 
         Transforming = false;
         Time.timeScale = 1f;
+
+        if (thenInvulnerable) {
+            invulnerability = StartCoroutine(Invulnerability());
+        }
     }
 
     private void ShowFrame(char frame)
@@ -144,6 +157,48 @@ public class Player : MonoBehaviour
     {
         smallRenderer.overrideSprite = null;
         bigRenderer.overrideSprite = null;
+    }
+
+    private IEnumerator Invulnerability()
+    {
+        invulnerable = true;
+        SetEnemyCollision(false);
+
+        float elapsed = 0f;
+
+        while (elapsed < invulnerableTime)
+        {
+            elapsed += Time.deltaTime;
+            activeRenderer.spriteRenderer.enabled = Mathf.FloorToInt(elapsed * 20f) % 2 == 0;
+            yield return null;
+        }
+
+        StopInvulnerability();
+    }
+
+    private void StopInvulnerability()
+    {
+        if (invulnerability != null)
+        {
+            StopCoroutine(invulnerability);
+            invulnerability = null;
+        }
+
+        smallRenderer.spriteRenderer.enabled = smallRenderer.enabled;
+        bigRenderer.spriteRenderer.enabled = bigRenderer.enabled;
+        SetEnemyCollision(true);
+        invulnerable = false;
+    }
+
+    // mario passes through enemies while he is invulnerable
+    private static void SetEnemyCollision(bool enabled)
+    {
+        int player = LayerMask.NameToLayer("Player");
+        int enemy = LayerMask.NameToLayer("Enemy");
+        int shell = LayerMask.NameToLayer("Shell");
+
+        Physics2D.IgnoreLayerCollision(player, enemy, !enabled);
+        Physics2D.IgnoreLayerCollision(player, shell, !enabled);
     }
 
     public void Starpower()
