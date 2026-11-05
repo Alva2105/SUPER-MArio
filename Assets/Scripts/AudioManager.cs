@@ -60,16 +60,46 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    // level music changes to its hurried version when little time is left,
+    // and to the star music while mario has the star, like the original
+    public static bool Hurry { get; private set; }
+    public static bool Star { get; private set; }
+
+    private static readonly Dictionary<string, string> HurriedMusic = new Dictionary<string, string>
+    {
+        { "music_overworld", "music_hurried_overworld" },
+        { "music_underground", "music_hurried_underground" },
+        { "music_water", "music_hurried_underwater" },
+        { "music_castle", "music_hurried_castle" },
+        { "music_star", "music_hurried_star" },
+    };
+
+    // clip that is really playing; currentMusic keeps the level music asked for
+    private string playingMusic;
+
+    private static string Resolve(string name)
+    {
+        // only the level music changes, the title and jingles stay the same
+        if (name == null || !HurriedMusic.ContainsKey(name)) return name;
+
+        if (Star) name = "music_star";
+
+        return Hurry ? HurriedMusic[name] : name;
+    }
+
     public static void PlayMusic(string name, bool loop = true)
     {
         if (Instance == null) return;
 
-        if (Instance.currentMusic == name && Instance.musicSource.isPlaying) {
+        string clipName = Resolve(name);
+        Instance.currentMusic = name;
+
+        if (Instance.playingMusic == clipName && Instance.musicSource.isPlaying) {
             return;
         }
 
-        Instance.currentMusic = name;
-        Instance.musicSource.clip = Instance.GetClip(name);
+        Instance.playingMusic = clipName;
+        Instance.musicSource.clip = Instance.GetClip(clipName);
         Instance.musicSource.loop = loop;
         Instance.musicSource.Play();
     }
@@ -79,7 +109,27 @@ public class AudioManager : MonoBehaviour
         if (Instance == null) return;
 
         Instance.currentMusic = null;
+        Instance.playingMusic = null;
         Instance.musicSource.Stop();
+    }
+
+    public static void SetHurry(bool hurry)
+    {
+        Hurry = hurry;
+        RefreshMusic();
+    }
+
+    public static void SetStar(bool star)
+    {
+        Star = star;
+        RefreshMusic();
+    }
+
+    private static void RefreshMusic()
+    {
+        if (Instance != null && Instance.currentMusic != null) {
+            PlayMusic(Instance.currentMusic);
+        }
     }
 
     public static float Length(string name)

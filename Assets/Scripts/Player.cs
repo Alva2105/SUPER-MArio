@@ -47,6 +47,8 @@ public class Player : MonoBehaviour
 
     private void OnDestroy()
     {
+        AudioManager.SetStar(false);
+
         if (Transforming)
         {
             Transforming = false;
@@ -85,6 +87,7 @@ public class Player : MonoBehaviour
         deathAnimation.enabled = true;
 
         AudioManager.StopMusic();
+        AudioManager.SetStar(false);
         AudioManager.Play("death");
         GameManager.Instance.ResetLevel(3f);
     }
@@ -249,6 +252,7 @@ public class Player : MonoBehaviour
     {
         starpower = true;
         SetStarMaterial(true);
+        AudioManager.SetStar(true);
 
         float elapsed = 0f;
 
@@ -280,6 +284,7 @@ public class Player : MonoBehaviour
         SetStarMaterial(false);
         starpower = false;
         starRoutine = null;
+        AudioManager.SetStar(false);
     }
 
 }

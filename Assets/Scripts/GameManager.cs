@@ -95,6 +95,11 @@ public class GameManager : MonoBehaviour
         // one game second lasts 0.4 real seconds, like the original
         time -= Time.deltaTime * 2.5f;
 
+        // with less than 100 seconds left the music speeds up, like the original
+        if (time < 100f && !AudioManager.Hurry) {
+            AudioManager.SetHurry(true);
+        }
+
         if (time <= 0f)
         {
             time = 0f;
@@ -143,6 +148,7 @@ public class GameManager : MonoBehaviour
     private void LeaveLevel()
     {
         SaveTopScore();
+        AudioManager.SetHurry(false);
         StopAllCoroutines();
         Time.timeScale = 1f;
         timerRunning = false;
@@ -177,6 +183,7 @@ public class GameManager : MonoBehaviour
     {
         inLevel = true;
         timeUp = false;
+        AudioManager.SetHurry(false);
         LevelSettings settings = FindAnyObjectByType<LevelSettings>();
 
         time = settings != null ? settings.timeLimit : 400;
