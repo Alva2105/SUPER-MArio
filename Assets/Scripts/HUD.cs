@@ -7,6 +7,8 @@ public class HUD : MonoBehaviour
 
     private PixelText scoreText;
     private PixelText coinIcon;
+    private Image coinImage;
+    private Sprite[] coinFrames;
     private PixelText coinsText;
     private PixelText worldText;
     private PixelText timeText;
@@ -64,6 +66,7 @@ public class HUD : MonoBehaviour
         coinIcon = CreateText(topBar.transform, 0.30f, 0.34f, 0f, 1f, 20, TextAnchor.UpperLeft);
         coinIcon.Text = "\n$";
         coinIcon.Color = CoinColor;
+        CreateCoinIcon();
         coinsText = CreateText(topBar.transform, 0.32f, 0.46f, 0f, 1f, 20, TextAnchor.UpperLeft);
         worldText = CreateText(topBar.transform, 0.47f, 0.62f, 0f, 1f, 20, TextAnchor.UpperLeft);
         timeText = CreateText(topBar.transform, 0.65f, 0.80f, 0f, 1f, 20, TextAnchor.UpperLeft);
@@ -81,6 +84,49 @@ public class HUD : MonoBehaviour
         worldText.Text = game.world > 0 ? $"MUNDO\n {game.world}-{game.stage}" : "MUNDO";
         timeText.Text = timeVisible ? $"TIEMPO\n  {Mathf.CeilToInt(game.time):000}" : "TIEMPO";
         livesText.Text = $"VIDAS\n x{game.lives}";
+
+        AnimateCoinIcon();
+    }
+
+    // frames of the original HUD coin: bright, then it darkens and comes back
+    private static readonly int[] CoinCycle = { 0, 0, 0, 1, 2, 1 };
+
+    // the HUD coin icon from the original sheet (Resources/HUD/CoinIcon: 3 frames of 8x8)
+    private void CreateCoinIcon()
+    {
+        Texture2D texture = Resources.Load<Texture2D>("HUD/CoinIcon");
+
+        if (texture == null) return;
+
+        texture.filterMode = FilterMode.Point;
+        int frames = texture.width / texture.height;
+        coinFrames = new Sprite[frames];
+
+        for (int i = 0; i < frames; i++) {
+            coinFrames[i] = Sprite.Create(texture, new Rect(i * texture.height, 0f, texture.height, texture.height), new Vector2(0.5f, 0.5f), 16f);
+        }
+
+        GameObject icon = new GameObject("Coin Icon", typeof(RectTransform), typeof(Image));
+        icon.transform.SetParent(topBar.transform, false);
+
+        // same place and size as the "$" glyph it replaces, on the second line
+        RectTransform rect = icon.GetComponent<RectTransform>();
+        rect.anchorMin = rect.anchorMax = new Vector2(0.30f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = new Vector2(0f, -coinIcon.size * coinIcon.lineSpacing);
+        rect.sizeDelta = new Vector2(coinIcon.size, coinIcon.size);
+
+        coinImage = icon.GetComponent<Image>();
+        coinImage.sprite = coinFrames[0];
+        coinIcon.gameObject.SetActive(false);
+    }
+
+    private void AnimateCoinIcon()
+    {
+        if (coinImage == null) return;
+
+        int step = Mathf.FloorToInt(Time.unscaledTime / 0.13f) % CoinCycle.Length;
+        coinImage.sprite = coinFrames[Mathf.Min(CoinCycle[step], coinFrames.Length - 1)];
     }
 
     public void ShowPoints(string text, Vector3 worldPosition)

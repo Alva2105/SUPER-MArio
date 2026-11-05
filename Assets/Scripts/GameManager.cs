@@ -112,6 +112,7 @@ public class GameManager : MonoBehaviour
         {
             time = 0f;
             timerRunning = false;
+            timeUp = true;
 
             // mario's children also use the Player tag, so search the component
             Player player = FindFirstObjectByType<Player>();
@@ -188,6 +189,7 @@ public class GameManager : MonoBehaviour
     private void SetupLevel()
     {
         inLevel = true;
+        timeUp = false;
         LevelSettings settings = FindAnyObjectByType<LevelSettings>();
 
         time = settings != null ? settings.timeLimit : 400;
@@ -338,6 +340,31 @@ public class GameManager : MonoBehaviour
         lives--;
         SavePlayer();
 
+        // like the original, running out of time shows "TIME UP" first
+        if (timeUp) {
+            StartCoroutine(TimeUpScreen());
+        } else {
+            ContinueAfterDeath();
+        }
+    }
+
+    private bool timeUp;
+
+    private IEnumerator TimeUpScreen()
+    {
+        timeUp = false;
+        hud.ShowIntro("TIME UP");
+        Time.timeScale = 0f;
+
+        yield return new WaitForSecondsRealtime(2f);
+
+        hud.HideIntro();
+        Time.timeScale = 1f;
+        ContinueAfterDeath();
+    }
+
+    private void ContinueAfterDeath()
+    {
         if (lives <= 0)
         {
             GameOver();
