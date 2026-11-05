@@ -12,12 +12,13 @@ Proyecto basado en el tutorial de Super Mario Bros de Zigurous, ampliado con nue
 3. **Escena de Game Over**: réplica de la pantalla original (fondo negro, HUD y "GAME OVER" con su jingle). Al terminar vuelve al 1-1; manteniendo Enter se continúa en el mismo mundo.
 4. **Castillo de Bowser 2-4 (diseño propio)**: recorrido original hecho con los tiles de los castillos del juego: fosos de lava con Podoboos, barras de fuego, bloques flotantes, Bowser que salta y lanza fuego, puente que se derrumba al tocar el hacha y pantalla final.
 
-Además: música y efectos de sonido en todo el juego, HUD con fuente pixelada (puntaje, monedas, mundo, tiempo y vidas), pantalla de inicio de nivel, pausa (P / Esc), ladrillos que se rompen, cámara suave con límites y zonas por área.
+Además: menú de inicio (1 jugador / salir, al que se vuelve tras el Game Over y el final del castillo), música y efectos de sonido en todo el juego, HUD con fuente pixelada (puntaje, monedas, mundo, tiempo y vidas), pantalla de inicio de nivel, pausa (P / Esc), ladrillos que se rompen, cámara suave con límites y zonas por área.
 
 ## Controles
 
 | Acción | Teclas |
 | --- | --- |
+| Elegir en el menú | W / S o flechas, Enter o Espacio para confirmar |
 | Moverse | A / D o flechas |
 | Saltar / nadar | Espacio |
 | Entrar a tubería | S / flecha abajo, D / flecha derecha (laterales) |
