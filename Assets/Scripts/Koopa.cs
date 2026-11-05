@@ -7,6 +7,7 @@ public class Koopa : MonoBehaviour
 
     private bool shelled;
     private bool pushed;
+    private bool dead;
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -76,8 +77,20 @@ public class Koopa : MonoBehaviour
         gameObject.layer = LayerMask.NameToLayer("Shell");
     }
 
+
+    // hit from below through the block it stands on, like the original
+    public void Bump()
+    {
+        if (!dead) {
+            Hit();
+        }
+    }
+
     private void Hit()
     {
+        if (dead) return;
+
+        dead = true;
         AudioManager.Play("kick");
         GameManager.Instance.AddScore(200, transform.position);
 

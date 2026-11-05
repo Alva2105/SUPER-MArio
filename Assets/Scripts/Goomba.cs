@@ -4,9 +4,11 @@ public class Goomba : MonoBehaviour
 {
     public Sprite flatSprite;
 
+    private bool dead;
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (!dead && collision.gameObject.CompareTag("Player"))
         {
             Player player = collision.gameObject.GetComponent<Player>();
 
@@ -22,13 +24,14 @@ public class Goomba : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Shell")) {
+        if (!dead && other.gameObject.layer == LayerMask.NameToLayer("Shell")) {
             Hit();
         }
     }
 
     private void Flatten(Player player)
     {
+        dead = true;
         AudioManager.Play("stomp");
         GameManager.Instance.AddStompScore(player, transform.position);
 
@@ -39,8 +42,18 @@ public class Goomba : MonoBehaviour
         Destroy(gameObject, 0.5f);
     }
 
+
+    // hit from below through the block it stands on, like the original
+    public void Bump()
+    {
+        if (!dead) {
+            Hit();
+        }
+    }
+
     private void Hit()
     {
+        dead = true;
         AudioManager.Play("kick");
         GameManager.Instance.AddScore(100, transform.position);
 

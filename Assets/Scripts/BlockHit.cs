@@ -20,6 +20,8 @@ public class BlockHit : MonoBehaviour
 
     private void Hit(Player player)
     {
+        BumpEnemies();
+
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.enabled = true; // show if hidden
 
@@ -50,6 +52,21 @@ public class BlockHit : MonoBehaviour
         }
 
         StartCoroutine(Animate());
+    }
+
+    // like the original, hitting a block from below kills the enemies on top
+    private void BumpEnemies()
+    {
+        Vector2 center = (Vector2)transform.position + Vector2.up * 0.75f;
+
+        foreach (Collider2D other in Physics2D.OverlapBoxAll(center, new Vector2(0.9f, 0.5f), 0f))
+        {
+            if (other.TryGetComponent(out Goomba goomba)) {
+                goomba.Bump();
+            } else if (other.TryGetComponent(out Koopa koopa)) {
+                koopa.Bump();
+            }
+        }
     }
 
     private void Break(Sprite sprite)

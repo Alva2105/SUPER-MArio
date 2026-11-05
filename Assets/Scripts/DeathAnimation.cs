@@ -28,6 +28,11 @@ public class DeathAnimation : MonoBehaviour
         spriteRenderer.enabled = true;
         spriteRenderer.sortingOrder = 10;
 
+        // enemies fall upside down, like the original
+        if (GetComponent<Player>() == null) {
+            spriteRenderer.flipY = true;
+        }
+
         if (deadSprite != null) {
             spriteRenderer.sprite = deadSprite;
         }
