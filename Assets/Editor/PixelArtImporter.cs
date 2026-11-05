@@ -12,6 +12,8 @@ public class PixelArtImporter : AssetPostprocessor
 
         var importer = (TextureImporter)assetImporter;
         importer.textureType = TextureImporterType.Sprite;
+        // small strips like 24x8 can be detected as a cubemap, they are always 2D
+        importer.textureShape = TextureImporterShape.Texture2D;
         importer.spriteImportMode = SpriteImportMode.Single;
         importer.spritePixelsPerUnit = 16;
         importer.filterMode = FilterMode.Point;
