@@ -191,7 +191,15 @@ public class GameManager : MonoBehaviour
     private IEnumerator LevelIntro(string music)
     {
         AudioManager.StopMusic();
-        hud.ShowIntro($"MUNDO {world}-{stage}\n\n{playerName}  x  {lives}");
+        // small mario or luigi, already with the colors of the chosen character
+        Player player = FindFirstObjectByType<Player>();
+        Sprite character = player != null && player.smallRenderer != null ? player.smallRenderer.idle : null;
+
+        if (character != null) {
+            hud.ShowLevelIntro(world, stage, character, lives);
+        } else {
+            hud.ShowIntro($"MUNDO {world}-{stage}\n\n{playerName}  x  {lives}");
+        }
         Time.timeScale = 0f;
 
         yield return new WaitForSecondsRealtime(2f);

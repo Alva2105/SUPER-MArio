@@ -16,6 +16,9 @@ public class HUD : MonoBehaviour
     private GameObject topBar;
     private GameObject introPanel;
     private PixelText introText;
+    private PixelText introWorld;
+    private Image introCharacter;
+    private PixelText introLives;
     private GameObject pausePanel;
     private RectTransform popupLayer;
     private bool timeVisible = true;
@@ -48,6 +51,25 @@ public class HUD : MonoBehaviour
 
         introPanel = CreatePanel("Intro", Color.black);
         introText = CreateText(introPanel.transform, 0f, 1f, 0f, 1f, 24, TextAnchor.MiddleCenter);
+
+        // level intro of the original: the world above, the character x lives below
+        introWorld = CreateText(introPanel.transform, 0f, 1f, 0.5f, 0.5f, 20, TextAnchor.MiddleCenter);
+        introWorld.GetComponent<RectTransform>().offsetMin = new Vector2(0f, 65f);
+        introWorld.GetComponent<RectTransform>().offsetMax = new Vector2(0f, 85f);
+
+        introCharacter = new GameObject("Character", typeof(RectTransform), typeof(Image)).GetComponent<Image>();
+        introCharacter.transform.SetParent(introPanel.transform, false);
+        introCharacter.preserveAspect = true;
+        introCharacter.raycastTarget = false;
+        RectTransform character = introCharacter.rectTransform;
+        character.anchorMin = character.anchorMax = new Vector2(0.5f, 0.5f);
+        character.sizeDelta = new Vector2(40f, 40f);
+        character.anchoredPosition = new Vector2(-64f, 0f);
+
+        introLives = CreateText(introPanel.transform, 0.5f, 0.5f, 0.5f, 0.5f, 20, TextAnchor.MiddleLeft);
+        RectTransform lives = introLives.GetComponent<RectTransform>();
+        lives.offsetMin = new Vector2(-30f, -10f);
+        lives.offsetMax = new Vector2(90f, 10f);
         introPanel.SetActive(false);
 
         pausePanel = CreatePanel("Pause", new Color(0f, 0f, 0f, 0.6f));
@@ -162,8 +184,27 @@ public class HUD : MonoBehaviour
 
     public void ShowIntro(string text)
     {
+        SetLevelIntroVisible(false);
         introText.Text = text;
         introPanel.SetActive(true);
+    }
+
+    // "MUNDO 1-1" and the character's sprite with his lives, like the original
+    public void ShowLevelIntro(int world, int stage, Sprite character, int lives)
+    {
+        introText.Text = "";
+        introWorld.Text = $"MUNDO {world}-{stage}";
+        introCharacter.sprite = character;
+        introLives.Text = $"x  {lives}";
+        SetLevelIntroVisible(true);
+        introPanel.SetActive(true);
+    }
+
+    private void SetLevelIntroVisible(bool visible)
+    {
+        introWorld.gameObject.SetActive(visible);
+        introCharacter.gameObject.SetActive(visible && introCharacter.sprite != null);
+        introLives.gameObject.SetActive(visible);
     }
 
     public void HideIntro()
