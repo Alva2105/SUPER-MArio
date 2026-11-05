@@ -375,6 +375,9 @@ public class GameManager : MonoBehaviour
     {
         int combo = player != null ? player.stompCombo++ : 0;
 
+        // each enemy stomped in a row sounds a little higher
+        AudioManager.Play("stompswim", 1f, 1f + Mathf.Min(combo, 8) * 0.07f);
+
         if (combo < StompCombo.Length)
         {
             AddScore(StompCombo[combo], position);

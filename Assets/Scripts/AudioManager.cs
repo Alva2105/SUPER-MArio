@@ -90,4 +90,29 @@ public class AudioManager : MonoBehaviour
         return clip != null ? clip.length : 0f;
     }
 
+    // a few extra sources so effects with their own pitch can overlap
+    private readonly AudioSource[] pitchedSources = new AudioSource[3];
+    private int nextPitchedSource;
+
+    public static void Play(string name, float volume, float pitch)
+    {
+        if (Instance == null) return;
+
+        AudioClip clip = Instance.GetClip(name);
+
+        if (clip == null) return;
+
+        int index = Instance.nextPitchedSource;
+        Instance.nextPitchedSource = (index + 1) % Instance.pitchedSources.Length;
+
+        if (Instance.pitchedSources[index] == null) {
+            Instance.pitchedSources[index] = Instance.gameObject.AddComponent<AudioSource>();
+        }
+
+        AudioSource source = Instance.pitchedSources[index];
+        source.pitch = pitch;
+        source.volume = Instance.sfxSource.volume;
+        source.PlayOneShot(clip, volume);
+    }
+
 }

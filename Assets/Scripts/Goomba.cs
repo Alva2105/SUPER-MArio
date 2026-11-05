@@ -32,7 +32,7 @@ public class Goomba : MonoBehaviour
     private void Flatten(Player player)
     {
         dead = true;
-        AudioManager.Play("stomp");
+        // the stomp sound is played by the combo, higher on each enemy in a row
         GameManager.Instance.AddStompScore(player, transform.position);
 
         GetComponent<Collider2D>().enabled = false;

@@ -54,7 +54,7 @@ public class Koopa : MonoBehaviour
     private void EnterShell(Player player)
     {
         shelled = true;
-        AudioManager.Play("stomp");
+        // the stomp sound is played by the combo, higher on each enemy in a row
         GameManager.Instance.AddStompScore(player, transform.position);
 
         GetComponent<SpriteRenderer>().sprite = shellSprite;
