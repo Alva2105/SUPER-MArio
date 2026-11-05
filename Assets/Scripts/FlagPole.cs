@@ -20,7 +20,8 @@ public class FlagPole : MonoBehaviour
 
             // higher grabs are worth more points
             float height = Mathf.Clamp01((other.transform.position.y - poleBottom.position.y) / 8f);
-            GameManager.Instance.AddScore(Mathf.RoundToInt(Mathf.Lerp(100f, 5000f, height) / 100f) * 100);
+            int points = Mathf.RoundToInt(Mathf.Lerp(100f, 5000f, height) / 100f) * 100;
+            GameManager.Instance.AddScore(points, other.transform.position + Vector3.right);
             GameManager.Instance.StopTimer();
 
             AudioManager.StopMusic();

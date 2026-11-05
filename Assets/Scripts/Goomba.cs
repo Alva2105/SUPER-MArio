@@ -30,7 +30,7 @@ public class Goomba : MonoBehaviour
     private void Flatten()
     {
         AudioManager.Play("stomp");
-        GameManager.Instance.AddScore(100);
+        GameManager.Instance.AddScore(100, transform.position);
 
         GetComponent<Collider2D>().enabled = false;
         GetComponent<EntityMovement>().enabled = false;
@@ -42,7 +42,7 @@ public class Goomba : MonoBehaviour
     private void Hit()
     {
         AudioManager.Play("kick");
-        GameManager.Instance.AddScore(100);
+        GameManager.Instance.AddScore(100, transform.position);
 
         GetComponent<AnimatedSprite>().enabled = false;
         GetComponent<DeathAnimation>().enabled = true;

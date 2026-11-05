@@ -5,7 +5,7 @@ public class BlockCoin : MonoBehaviour
 {
     private void Start()
     {
-        GameManager.Instance.AddCoin();
+        GameManager.Instance.AddCoin(transform.position + Vector3.up);
         AudioManager.Play("coin");
 
         StartCoroutine(Animate());

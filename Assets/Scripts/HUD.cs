@@ -15,6 +15,7 @@ public class HUD : MonoBehaviour
     private GameObject introPanel;
     private PixelText introText;
     private GameObject pausePanel;
+    private RectTransform popupLayer;
     private bool timeVisible = true;
 
     public bool introVisible => introPanel.activeSelf;
@@ -38,6 +39,11 @@ public class HUD : MonoBehaviour
 
     private void Awake()
     {
+        // floating points go below the intro and pause panels
+        popupLayer = new GameObject("Popups", typeof(RectTransform)).GetComponent<RectTransform>();
+        popupLayer.SetParent(transform, false);
+        Stretch(popupLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+
         introPanel = CreatePanel("Intro", Color.black);
         introText = CreateText(introPanel.transform, 0f, 1f, 0f, 1f, 24, TextAnchor.MiddleCenter);
         introPanel.SetActive(false);
@@ -77,12 +83,27 @@ public class HUD : MonoBehaviour
         livesText.Text = $"VIDAS\n x{game.lives}";
     }
 
+    public void ShowPoints(string text, Vector3 worldPosition)
+    {
+        if (!topBar.activeSelf) return;
+
+        ScorePopup.Create(popupLayer, text, worldPosition);
+    }
+
+    private void ClearPoints()
+    {
+        foreach (Transform popup in popupLayer) {
+            Destroy(popup.gameObject);
+        }
+    }
+
     public void SetVisible(bool visible)
     {
         topBar.SetActive(visible);
 
         if (!visible)
         {
+            ClearPoints();
             introPanel.SetActive(false);
             pausePanel.SetActive(false);
         }

@@ -378,6 +378,13 @@ public class GameManager : MonoBehaviour
         score += points;
     }
 
+    // adds the points and shows them floating over the given world position
+    public void AddScore(int points, Vector3 position)
+    {
+        AddScore(points);
+        hud.ShowPoints(points.ToString(), position);
+    }
+
     public void AddCoin()
     {
         coins++;
@@ -388,6 +395,13 @@ public class GameManager : MonoBehaviour
             coins = 0;
             AddLife();
         }
+    }
+
+    // coins that pop out of blocks also show their points
+    public void AddCoin(Vector3 position)
+    {
+        AddCoin();
+        hud.ShowPoints("200", position);
     }
 
     public void AddLife()

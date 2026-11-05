@@ -90,7 +90,7 @@ public class PiranhaPlant : MonoBehaviour
         dead = true;
         StopAllCoroutines();
         AudioManager.Play("kick");
-        GameManager.Instance.AddScore(200);
+        GameManager.Instance.AddScore(200, transform.position);
         Destroy(gameObject);
     }
 

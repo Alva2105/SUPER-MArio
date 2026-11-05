@@ -58,7 +58,7 @@ public abstract class WaterEnemy : MonoBehaviour
     {
         dead = true;
         AudioManager.Play("kick");
-        GameManager.Instance.AddScore(200);
+        GameManager.Instance.AddScore(200, transform.position);
 
         AnimatedSprite animation = GetComponent<AnimatedSprite>();
 

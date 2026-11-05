@@ -34,13 +34,13 @@ public class PowerUp : MonoBehaviour
 
             case Type.MagicMushroom:
                 AudioManager.Play("powerup");
-                GameManager.Instance.AddScore(1000);
+                GameManager.Instance.AddScore(1000, transform.position);
                 player.GetComponent<Player>().Grow();
                 break;
 
             case Type.Starpower:
                 AudioManager.Play("powerup");
-                GameManager.Instance.AddScore(1000);
+                GameManager.Instance.AddScore(1000, transform.position);
                 player.GetComponent<Player>().Starpower();
                 break;
         }
