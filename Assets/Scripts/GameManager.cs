@@ -13,6 +13,11 @@ public class GameManager : MonoBehaviour
     public int score { get; private set; }
     public float time { get; private set; }
     public bool timerRunning { get; private set; }
+    public int players { get; private set; } = 1;
+
+    // best score, shown as TOP on the title screen
+    public int topScore { get; private set; }
+    private const string TopScoreKey = "TopScore";
 
     public HUD hud { get; private set; }
 
@@ -49,6 +54,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         Application.targetFrameRate = 60;
+        topScore = PlayerPrefs.GetInt(TopScoreKey, 0);
 
         lives = 3;
         coins = 0;
@@ -121,8 +127,18 @@ public class GameManager : MonoBehaviour
 
     private bool inLevel;
 
+    private void SaveTopScore()
+    {
+        if (score <= topScore) return;
+
+        topScore = score;
+        PlayerPrefs.SetInt(TopScoreKey, topScore);
+        PlayerPrefs.Save();
+    }
+
     private void LeaveLevel()
     {
+        SaveTopScore();
         StopAllCoroutines();
         Time.timeScale = 1f;
         timerRunning = false;
@@ -179,6 +195,13 @@ public class GameManager : MonoBehaviour
 
     public void NewGame()
     {
+        NewGame(1);
+    }
+
+    public void NewGame(int players)
+    {
+        SaveTopScore();
+        this.players = Mathf.Clamp(players, 1, 2);
         lives = 3;
         coins = 0;
         score = 0;
@@ -188,6 +211,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
+        SaveTopScore();
         timerRunning = false;
         Time.timeScale = 1f;
 

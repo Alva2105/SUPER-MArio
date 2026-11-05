@@ -1,31 +1,50 @@
 using UnityEngine;
 
+// Title screen like the original: the mushroom cursor picks 1 or 2 players
+// and TOP shows the best score. Esc closes the game.
 public class MainMenu : MonoBehaviour
 {
     public RectTransform cursor;
     public RectTransform[] options;
+    public PixelText topText;
 
     private int selected;
+
+    private void Start()
+    {
+        int top = GameManager.Instance != null ? GameManager.Instance.topScore : 0;
+
+        if (topText != null) {
+            topText.Text = $"TOP-{top:000000}";
+        }
+
+        Select(0, false);
+    }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) {
-            Select(selected + 1);
+            Select(selected + 1, true);
         } else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) {
-            Select(selected - 1);
+            Select(selected - 1, true);
         }
 
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space)) {
             Confirm();
+        } else if (Input.GetKeyDown(KeyCode.Escape)) {
+            Quit();
         }
     }
 
-    private void Select(int index)
+    private void Select(int index, bool playSound)
     {
         selected = (index + options.Length) % options.Length;
-        AudioManager.Play("select");
 
-        // keep the mushroom cursor next to the selected option
+        if (playSound) {
+            AudioManager.Play("select");
+        }
+
+        // the cursor stays to the left of the selected option
         Vector2 position = cursor.anchoredPosition;
         position.y = options[selected].anchoredPosition.y;
         cursor.anchoredPosition = position;
@@ -34,18 +53,15 @@ public class MainMenu : MonoBehaviour
     private void Confirm()
     {
         AudioManager.Play("select");
+        GameManager.Instance.NewGame(selected + 1);
+    }
 
-        if (selected == 0)
-        {
-            GameManager.Instance.NewGame();
-        }
-        else
-        {
-            Application.Quit();
+    private void Quit()
+    {
+        Application.Quit();
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+        UnityEditor.EditorApplication.isPlaying = false;
 #endif
-        }
     }
 
 }
