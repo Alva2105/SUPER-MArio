@@ -13,7 +13,7 @@ public class Goomba : MonoBehaviour
             if (player.starpower) {
                 Hit();
             } else if (collision.transform.DotTest(transform, Vector2.down)) {
-                Flatten();
+                Flatten(player);
             } else {
                 player.Hit();
             }
@@ -27,10 +27,10 @@ public class Goomba : MonoBehaviour
         }
     }
 
-    private void Flatten()
+    private void Flatten(Player player)
     {
         AudioManager.Play("stomp");
-        GameManager.Instance.AddScore(100, transform.position);
+        GameManager.Instance.AddStompScore(player, transform.position);
 
         GetComponent<Collider2D>().enabled = false;
         GetComponent<EntityMovement>().enabled = false;

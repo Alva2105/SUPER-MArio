@@ -17,7 +17,7 @@ public class Koopa : MonoBehaviour
             if (player.starpower) {
                 Hit();
             } else if (collision.transform.DotTest(transform, Vector2.down)) {
-                EnterShell();
+                EnterShell(player);
             }  else {
                 player.Hit();
             }
@@ -50,11 +50,11 @@ public class Koopa : MonoBehaviour
         }
     }
 
-    private void EnterShell()
+    private void EnterShell(Player player)
     {
         shelled = true;
         AudioManager.Play("stomp");
-        GameManager.Instance.AddScore(100, transform.position);
+        GameManager.Instance.AddStompScore(player, transform.position);
 
         GetComponent<SpriteRenderer>().sprite = shellSprite;
         GetComponent<AnimatedSprite>().enabled = false;

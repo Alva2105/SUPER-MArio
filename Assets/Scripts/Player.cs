@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     public bool starpower { get; private set; }
     public bool climbing { get; set; }
 
+    // enemies stomped in a row without touching the ground
+    public int stompCombo { get; set; }
+
     private void Awake()
     {
         capsuleCollider = GetComponent<CapsuleCollider2D>();

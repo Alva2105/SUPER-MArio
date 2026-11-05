@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
     private new Camera camera;
     private new Rigidbody2D rigidbody;
     private new Collider2D collider;
+    private Player player;
 
     private Vector2 velocity;
     private float inputAxis;
@@ -39,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
         camera = Camera.main;
         rigidbody = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
+        player = GetComponent<Player>();
     }
 
     private void OnEnable()
@@ -65,6 +67,11 @@ public class PlayerMovement : MonoBehaviour
         HorizontalMovement();
 
         grounded = rigidbody.Raycast(Vector2.down);
+
+        // the stomp combo ends when mario lands
+        if (grounded && player != null) {
+            player.stompCombo = 0;
+        }
 
         if (swimming)
         {

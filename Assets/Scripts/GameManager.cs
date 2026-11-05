@@ -385,6 +385,25 @@ public class GameManager : MonoBehaviour
         hud.ShowPoints(points.ToString(), position);
     }
 
+    // stomping enemies without touching the ground is worth more each time,
+    // like on the original: 100, 200, 400, 500, 800, 1000, 2000, 4000, 5000, 8000, 1UP
+    private static readonly int[] StompCombo = { 100, 200, 400, 500, 800, 1000, 2000, 4000, 5000, 8000 };
+
+    public void AddStompScore(Player player, Vector3 position)
+    {
+        int combo = player != null ? player.stompCombo++ : 0;
+
+        if (combo < StompCombo.Length)
+        {
+            AddScore(StompCombo[combo], position);
+        }
+        else
+        {
+            AddLife();
+            hud.ShowPoints("1UP", position);
+        }
+    }
+
     public void AddCoin()
     {
         coins++;
