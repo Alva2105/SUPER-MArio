@@ -158,7 +158,8 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = jumpForce;
             jumping = true;
-            AudioManager.Play("jump");
+            // big mario has his own, deeper jump sound
+            AudioManager.Play(player != null && player.big ? "jump_big" : "jump");
         }
     }
 
