@@ -91,10 +91,11 @@ public class GameManager : MonoBehaviour
             time = 0f;
             timerRunning = false;
 
-            GameObject player = GameObject.FindWithTag("Player");
+            // mario's children also use the Player tag, so search the component
+            Player player = FindFirstObjectByType<Player>();
 
             if (player != null) {
-                player.GetComponent<Player>().Death();
+                player.Death();
             }
         }
     }
