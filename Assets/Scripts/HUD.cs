@@ -70,7 +70,7 @@ public class HUD : MonoBehaviour
 
         if (game == null) return;
 
-        scoreText.Text = $"MARIO\n{game.score:000000}";
+        scoreText.Text = $"{game.playerName}\n{game.score:000000}";
         coinsText.Text = $"\nx{game.coins:00}";
         worldText.Text = game.world > 0 ? $"MUNDO\n {game.world}-{game.stage}" : "MUNDO";
         timeText.Text = timeVisible ? $"TIEMPO\n  {Mathf.CeilToInt(game.time):000}" : "TIEMPO";

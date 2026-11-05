@@ -40,7 +40,7 @@ public class CastleAxe : MonoBehaviour
         AudioManager.Play("castleclear");
         yield return GameManager.Instance.CountTimeBonus();
 
-        GameManager.Instance.hud.ShowIntro("GRACIAS MARIO!\n\n\nTU AVENTURA HA TERMINADO\n\n\nPUNTAJE " + GameManager.Instance.score.ToString("000000"));
+        GameManager.Instance.hud.ShowIntro("GRACIAS " + GameManager.Instance.playerName + "!\n\n\nTU AVENTURA HA TERMINADO\n\n\nPUNTAJE " + GameManager.Instance.score.ToString("000000"));
         yield return new WaitForSeconds(6f);
         GameManager.Instance.hud.HideIntro();
         GameManager.Instance.BackToMenu();

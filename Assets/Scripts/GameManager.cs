@@ -15,6 +15,22 @@ public class GameManager : MonoBehaviour
     public bool timerRunning { get; private set; }
     public int players { get; private set; } = 1;
 
+    // two player game: mario (0) and luigi (1) take turns like the original,
+    // each one keeps his own lives, coins, score and level
+    public int currentPlayer { get; private set; }
+    public string playerName => currentPlayer == 0 ? "MARIO" : "LUIGI";
+
+    private class PlayerState
+    {
+        public int world = 1;
+        public int stage = 1;
+        public int lives = 3;
+        public int coins;
+        public int score;
+    }
+
+    private readonly PlayerState[] states = { new PlayerState(), new PlayerState() };
+
     // best score, shown as TOP on the title screen
     public int topScore { get; private set; }
     private const string TopScoreKey = "TopScore";
@@ -159,6 +175,9 @@ public class GameManager : MonoBehaviour
 
     public void BackToMenu()
     {
+        // the title screen always shows mario
+        currentPlayer = 0;
+
         if (Application.CanStreamedLevelBeLoaded("Menu")) {
             SceneManager.LoadScene("Menu");
         } else {
@@ -183,7 +202,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator LevelIntro(string music)
     {
         AudioManager.StopMusic();
-        hud.ShowIntro($"MUNDO {world}-{stage}\n\nMARIO  x  {lives}");
+        hud.ShowIntro($"MUNDO {world}-{stage}\n\n{playerName}  x  {lives}");
         Time.timeScale = 0f;
 
         yield return new WaitForSecondsRealtime(2f);
@@ -202,11 +221,57 @@ public class GameManager : MonoBehaviour
     {
         SaveTopScore();
         this.players = Mathf.Clamp(players, 1, 2);
-        lives = 3;
-        coins = 0;
-        score = 0;
 
+        for (int i = 0; i < states.Length; i++) {
+            states[i] = new PlayerState();
+        }
+
+        LoadPlayer(0);
         LoadLevel(1, 1);
+    }
+
+    private void SavePlayer()
+    {
+        PlayerState state = states[currentPlayer];
+        state.world = world;
+        state.stage = stage;
+        state.lives = lives;
+        state.coins = coins;
+        state.score = score;
+    }
+
+    private void LoadPlayer(int player)
+    {
+        currentPlayer = player;
+        PlayerState state = states[player];
+        world = state.world;
+        stage = state.stage;
+        lives = state.lives;
+        coins = state.coins;
+        score = state.score;
+    }
+
+    private int OtherPlayer => 1 - currentPlayer;
+
+    private bool OtherPlayerAlive => players == 2 && states[OtherPlayer].lives > 0;
+
+    // after the game over screen: the other player goes on if he has lives,
+    // holding Enter continues with the same player, otherwise back to the menu
+    public void AfterGameOver(bool continueGame)
+    {
+        if (continueGame)
+        {
+            ContinueGame();
+        }
+        else if (OtherPlayerAlive)
+        {
+            LoadPlayer(OtherPlayer);
+            LoadLevel(world, stage);
+        }
+        else
+        {
+            BackToMenu();
+        }
     }
 
     public void GameOver()
@@ -271,12 +336,20 @@ public class GameManager : MonoBehaviour
     public void ResetLevel()
     {
         lives--;
+        SavePlayer();
 
-        if (lives > 0) {
-            LoadLevel(world, stage);
-        } else {
+        if (lives <= 0)
+        {
             GameOver();
+            return;
         }
+
+        // on a death the turn passes to the other player
+        if (OtherPlayerAlive) {
+            LoadPlayer(OtherPlayer);
+        }
+
+        LoadLevel(world, stage);
     }
 
     public void StopTimer()
